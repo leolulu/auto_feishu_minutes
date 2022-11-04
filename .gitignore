@@ -1,4 +1,5 @@
-pw.txt
+local_assets/
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
