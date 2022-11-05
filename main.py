@@ -11,7 +11,6 @@ class FileWatcher:
         print(f"新增文件进入监视中：{file_path}")
         self.file_path = file_path
         self.size_info = collections.deque(maxlen=3)
-        self.get_latest_size()
 
     def get_latest_size(self):
         self.size_info.append(os.path.getsize(self.file_path))
