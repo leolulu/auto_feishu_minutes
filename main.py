@@ -16,8 +16,8 @@ class FileWatcher:
         self.size_info.append(os.path.getsize(self.file_path))
 
     def check_size_stable(self):
-        print(f"检查文件大小是否稳定：{list(self.size_info)}")
         self.get_latest_size()
+        print(f"检查文件大小是否稳定：{list(self.size_info)}")
         if (len(self.size_info) == 3) and (len(set(self.size_info)) == 1):
             return True
         else:
