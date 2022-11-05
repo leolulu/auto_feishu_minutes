@@ -74,14 +74,14 @@ class FeishuApp:
 
     def open_main_page(self):
         try:
-            self.edge_browser.wait_element_visible(xpath_page_title, 15)
+            self.edge_browser.wait_element_visible(xpath_page_title, 10)
             print("进入主页成功...")
         except TimeoutException:
             print("打开主页失败，进入登陆流程，可能需要手动输入验证码...")
             self.login()
 
     def upload_file(self):
-        upload_dropbox = self.edge_browser.find_element('xpath',xpath_upload_menu_container)
+        upload_dropbox = self.edge_browser.find_element('xpath', xpath_upload_menu_container)
         self.edge_browser.execute_script("arguments[0].style.display = 'block';", upload_dropbox)
         self.edge_browser.wait_element_clickable(xpath_upload_menu_container).click()
         self.edge_browser.wait_element_clickable(xpath_upload_modal_body).click()
@@ -116,7 +116,7 @@ class FeishuApp:
 
     def download_sub(self):
         hover = ActionChains(self.edge_browser).move_to_element(
-            self.edge_browser.find_element('xpath',xpath_detail_option)
+            self.edge_browser.find_element('xpath', xpath_detail_option)
         )
         hover.perform()
         self.edge_browser.wait_element_clickable(xpath_export_miaoji).click()
@@ -144,7 +144,7 @@ class FeishuApp:
 
     def delete_video(self):
         hover = ActionChains(self.edge_browser).move_to_element(
-            self.edge_browser.find_element('xpath',xpath_detail_option)
+            self.edge_browser.find_element('xpath', xpath_detail_option)
         )
         hover.perform()
         self.edge_browser.wait_element_clickable(xpath_delete_miaoji).click()
