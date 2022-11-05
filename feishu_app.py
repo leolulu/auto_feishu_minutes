@@ -49,6 +49,8 @@ class FeishuApp:
         browser.wait_element_clickable = types.MethodType(wait_element_clickable, browser)
 
     def load_user_password(self):
+        if not os.path.exists(FeishuApp.LOCAL_ASSETS):
+            os.makedirs(FeishuApp.LOCAL_ASSETS)
         pw_file_path = os.path.join(FeishuApp.LOCAL_ASSETS, 'pw.txt')
         if not os.path.exists(pw_file_path):
             user = input("请输入登陆用户名：")
