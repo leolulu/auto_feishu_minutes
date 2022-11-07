@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import sys
@@ -6,10 +7,12 @@ import types
 
 from lxml import etree
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, ElementNotInteractableException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.edge.service import Service
+from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
+from urllib3.connectionpool import log as urllibLogger
 
 from utils.download_util import get_download_path
 from utils.load_xpath import *
@@ -22,6 +25,7 @@ class FeishuApp:
     DATA_DIR = "data"
 
     def __init__(self, file_path, if_need_sub=True) -> None:
+        self.set_log_level()
         self.if_need_sub = if_need_sub
         self.file_dir = os.path.dirname(file_path)
         self.file_name = os.path.basename(file_path)
@@ -41,6 +45,10 @@ class FeishuApp:
         self._enrich_browser()
         self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
         self.edge_browser.maximize_window()
+
+    def set_log_level(self):
+        seleniumLogger.setLevel(logging.WARNING)
+        urllibLogger.setLevel(logging.WARNING)
 
     def _enrich_browser(self):
         browser = self.edge_browser
@@ -82,15 +90,20 @@ class FeishuApp:
             self.login()
 
     def upload_file(self):
-        time.sleep(2)
-        actions = ActionChains(self.edge_browser)
-        actions.move_to_element(
-            self.edge_browser.find_element('xpath', xpath_upload_button)
-        )
-        actions.click(
-            self.edge_browser.find_element('xpath', xpath_upload_menu_container)
-        )
-        actions.perform()
+        if_open_upload_menu_success = False
+        while not if_open_upload_menu_success:
+            try:
+                actions = ActionChains(self.edge_browser)
+                actions.move_to_element(
+                    self.edge_browser.find_element('xpath', xpath_upload_button)
+                )
+                actions.click(
+                    self.edge_browser.find_element('xpath', xpath_upload_menu_container)
+                )
+                actions.perform()
+                if_open_upload_menu_success = True
+            except ElementNotInteractableException:
+                time.sleep(2)
         self.edge_browser.wait_element_clickable(xpath_upload_modal_body).click()
         uploader = Uploader("打开")
         uploader.wait_present()
