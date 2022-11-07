@@ -51,10 +51,9 @@ class FileScanner:
 
     def scan_data_dir(self):
         for file in os.listdir(os.path.abspath(self.data_dir)):
-            file = file.lower()
             (name, ext) = os.path.splitext(file)
             file_path = os.path.join(self.data_dir, file)
-            if ext in FileScanner.SUPPORTED_FORMAT and (not name.endswith(FileScanner.POSTFIX)):
+            if ext.lower() in FileScanner.SUPPORTED_FORMAT and (not name.endswith(FileScanner.POSTFIX)):
                 self.append_file_list(file_path)
 
     def second_upload(self, file_path):

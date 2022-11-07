@@ -1,6 +1,6 @@
 # 登陆相关
 xpath_switch_icon = "//span[contains(@class,'switch-icon')]"
-xpath_service_policy = "//input[@class='ud__checkbox__input']"
+xpath_service_policy = "//div[@class='terms-and-policy-container']//input"
 xpath_input_mobile_phone = "//input[@class='mobile-input-phone']"
 xpath_confirm_phone = "//button[@data-test='login-phone-next-btn']"
 xpath_switch_pw_login = "//button[text()='密码登录']"
@@ -9,6 +9,7 @@ xpath_confirm_pw = "//button[@data-test='login-pwd-next-btn']"
 
 # 上传相关
 xpath_page_title = "//div[@class='page-title']"
+xpath_upload_button = "//div[@class='upload-menu-button']"
 xpath_upload_body = "//div[@class='upload-modal-body']"
 xpath_upload_submit = "//button[text()='提交']"
 xpath_upload_menu_container = "//div[@class='upload-menu-container']"

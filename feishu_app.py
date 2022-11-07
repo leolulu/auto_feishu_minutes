@@ -66,7 +66,7 @@ class FeishuApp:
     def login(self):
         self.edge_browser.wait_element_clickable(xpath_switch_icon).click()
         self.edge_browser.wait_element_clickable(xpath_input_mobile_phone).send_keys(self.user)
-        self.edge_browser.wait_element_clickable(xpath_service_policy).click()
+        self.edge_browser.find_element('xpath', xpath_service_policy).click()
         self.edge_browser.wait_element_clickable(xpath_confirm_phone).click()
         self.edge_browser.wait_element_clickable(xpath_switch_pw_login).click()
         self.edge_browser.wait_element_clickable(xpath_pw_input).send_keys(self.password)
@@ -81,9 +81,12 @@ class FeishuApp:
             self.login()
 
     def upload_file(self):
-        upload_dropbox = self.edge_browser.find_element('xpath', xpath_upload_menu_container)
-        self.edge_browser.execute_script("arguments[0].style.display = 'block';", upload_dropbox)
-        self.edge_browser.wait_element_clickable(xpath_upload_menu_container).click()
+        time.sleep(3)
+        hover = ActionChains(self.edge_browser).move_to_element(
+            self.edge_browser.find_element('xpath', xpath_upload_button)
+        )
+        hover.perform()
+        self.edge_browser.find_element('xpath', xpath_upload_menu_container).click()
         self.edge_browser.wait_element_clickable(xpath_upload_modal_body).click()
         uploader = Uploader("打开")
         uploader.wait_present()
