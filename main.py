@@ -21,10 +21,10 @@ class FileWatcher:
         try:
             os.rename(self.file_path, self.file_path)
         except:
-            print("文件复制粘贴未完成...")
+            print("文件复制粘贴未完成...\n")
             return False
         self.get_latest_size()
-        print(f"文件大小状态：{list(self.size_info)}")
+        print(f"文件大小状态：{list(self.size_info)}\n")
         if (len(self.size_info) == 3) and (len(set(self.size_info)) == 1):
             return True
         else:

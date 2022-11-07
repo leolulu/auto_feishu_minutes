@@ -17,7 +17,7 @@ def concat_video(folder_path):
         os.remove('filelist.txt')
     with open('filelist.txt', 'a', encoding='utf-8') as f:
         for i in os.listdir('.'):
-            if i == 'filelist.txt':
+            if i in ['filelist.txt', 'cut_video.log']:
                 continue
             print(f"Add: {i}")
             f.write(f"file '{i}'\n")
