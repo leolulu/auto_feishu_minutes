@@ -7,7 +7,7 @@ xpath_switch_pw_login = "//button[text()='密码登录']"
 xpath_pw_input = "//div[contains(@class,'verify-credential-pwd-input')]//input[@name='password_input']"
 xpath_confirm_pw = "//button[@data-test='login-pwd-next-btn']"
 
-# 上传相关
+# 触发上传相关
 xpath_page_title = "//div[@class='page-title']"
 xpath_upload_button = "//div[@class='upload-menu-button']"
 xpath_upload_body = "//div[@class='upload-modal-body']"
@@ -21,6 +21,7 @@ xpath_video_title = ".//div[@class='content']/text()"
 xpath_video_url = "./a/@href"
 xpath_video_duration = ".//div[@class='meeting-list-item-duration']/text()"
 xpath_video_video_transcoding = ".//div[@class='meeting-status-loading']/text()"
+xpath_upload_status = "//div[@class='upload-status']//text()"
 
 # 详情页相关
 xpath_detail_menu = "//div[contains(@class,'detail-meeting-menu')]"

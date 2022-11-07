@@ -3,6 +3,7 @@ import os
 import shutil
 import time
 
+from cut_dense_video import invoke_run
 from feishu_app import FeishuApp
 
 
@@ -33,6 +34,7 @@ class FileWatcher:
 
 class FileScanner:
     POSTFIX = "_srted"
+    NOT_PROCESS_POSTFIX = [POSTFIX, "_cut_dense"]
     SUPPORTED_FORMAT = ['.mp4', '.avi']
 
     def __init__(self, data_dir) -> None:
@@ -49,16 +51,24 @@ class FileScanner:
     def add_finish_mark(self, file_path):
         return shutil.move(file_path, self._renamed_name(file_path))
 
+    def _postfix_check(self, name: str):
+        pass_ = True
+        for postfix in FileScanner.NOT_PROCESS_POSTFIX:
+            if name.lower().endswith(postfix):
+                pass_ = False
+                break
+        return pass_
+
     def scan_data_dir(self):
         for file in os.listdir(os.path.abspath(self.data_dir)):
             (name, ext) = os.path.splitext(file)
             file_path = os.path.join(self.data_dir, file)
-            if ext.lower() in FileScanner.SUPPORTED_FORMAT and (not name.endswith(FileScanner.POSTFIX)):
+            if ext.lower() in FileScanner.SUPPORTED_FORMAT and (self._postfix_check(name)):
                 self.append_file_list(file_path)
 
     def second_upload(self, file_path):
         print("启用二次上传...")
-        app = FeishuApp(file_path, if_need_sub=False)
+        app = FeishuApp(invoke_run(file_path, delete_assembly_folder=False), if_need_sub=False)
         app.run()
 
     def check_and_process_files(self):
