@@ -24,9 +24,10 @@ class FeishuApp:
     LOCAL_ASSETS = "local_assets"
     DATA_DIR = "data"
 
-    def __init__(self, file_path, if_need_sub=True) -> None:
+    def __init__(self, file_path, if_need_sub=True, delete_org_video=False) -> None:
         self.set_log_level()
         self.if_need_sub = if_need_sub
+        self.delete_org_video = delete_org_video
         self.file_dir = os.path.dirname(file_path)
         self.file_name = os.path.basename(file_path)
         self.load_user_password()
@@ -192,7 +193,8 @@ class FeishuApp:
         if self.if_need_sub:
             self.download_sub()
             self.move_srt_file()
-            self.delete_video()
+            if self.delete_org_video:
+                self.delete_video()
         self.edge_browser.quit()
 
 
