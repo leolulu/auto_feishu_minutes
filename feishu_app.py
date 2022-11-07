@@ -71,6 +71,7 @@ class FeishuApp:
         self.edge_browser.wait_element_clickable(xpath_switch_pw_login).click()
         self.edge_browser.wait_element_clickable(xpath_pw_input).send_keys(self.password)
         self.edge_browser.wait_element_clickable(xpath_confirm_pw).click()
+        time.sleep(30)
 
     def open_main_page(self):
         try:
