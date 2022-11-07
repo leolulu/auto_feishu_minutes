@@ -17,14 +17,14 @@ class FileWatcher:
         self.size_info.append(os.path.getsize(self.file_path))
 
     def check_size_stable(self):
-        print(f"检查文件状态稳定性：{os.path.basename(self.file_path)}")
+        print(f"\n检查文件状态稳定性：{os.path.basename(self.file_path)}")
         try:
             os.rename(self.file_path, self.file_path)
         except:
-            print("文件复制粘贴未完成...\n")
+            print("文件复制粘贴未完成...")
             return False
         self.get_latest_size()
-        print(f"文件大小状态：{list(self.size_info)}\n")
+        print(f"文件大小状态：{list(self.size_info)}")
         if (len(self.size_info) == 3) and (len(set(self.size_info)) == 1):
             return True
         else:
