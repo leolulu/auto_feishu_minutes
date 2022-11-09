@@ -72,10 +72,21 @@ class FileScanner:
             if ext.lower() in FileScanner.SUPPORTED_FORMAT and (self._postfix_check(name)):
                 self.append_file_list(file_path)
 
-    def second_upload(self, file_path):
-        print("启用二次上传...")
-        app = FeishuApp(invoke_run(file_path, delete_assembly_folder=False), if_need_sub=False)
+    def _level_upload(self, video_file, level, level_target):
+        print(f"启动【{level}】次上传...")
+        dense_cutted_video_path = invoke_run(video_file, delete_assembly_folder=False)
+        app = FeishuApp(
+            dense_cutted_video_path,
+            if_need_sub=False if level == level_target else True
+        )
         app.run()
+        if level < level_target:
+            self._level_upload(dense_cutted_video_path, level+1, level_target)
+
+    def multi_post_upload(self, finish_file_path, level_target=4):
+        print("启用后处理上传...")
+        level = 2
+        self._level_upload(finish_file_path, level, level_target)
 
     def check_and_process_files(self):
         for file in self.files[::-1]:
@@ -83,7 +94,7 @@ class FileScanner:
                 file.institute_feishu_process()
                 finish_file_path = self.add_finish_mark(file.file_path)
                 self.add_finish_mark(file.srt_path)
-                self.second_upload(finish_file_path)
+                self.multi_post_upload(finish_file_path, level_target=4)
                 self.files.remove(file)
                 print("处理完成，继续监控...")
 
