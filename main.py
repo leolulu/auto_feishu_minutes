@@ -51,7 +51,7 @@ class FileWatcher:
 
 class FileScanner:
     POSTFIX = "_srted"
-    NOT_PROCESS_POSTFIX = [POSTFIX, "_cut_dense"]
+    NOT_PROCESS_POSTFIX = [POSTFIX, "_cut_dense", "_ccd"]
     SUPPORTED_FORMAT = ['.mp4', '.avi']
 
     def __init__(
