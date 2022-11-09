@@ -8,7 +8,7 @@ from tqdm import tqdm
 from utils.read_srt import read_srt
 
 
-def concat_video(folder_path):
+def concat_video(folder_path, simple_postfix=False):
     _cwd = os.getcwd()
     os.chdir(folder_path)
     print(f"工作目录：{os.getcwd()}")
@@ -21,6 +21,8 @@ def concat_video(folder_path):
                 continue
             f.write(f"file '{i}'\n")
     file_name = f"{os.path.basename(folder_path)}_cut_dense.mp4"
+    if simple_postfix:
+        file_name.replace("_concat_cut_dense", "_ccd")
     log_path = os.path.abspath(os.path.join(folder_path, "concat_video.log"))
     command = f'ffmpeg -f concat -safe 0 -i filelist.txt -c copy -y "{file_name}" 2>>"{log_path}"'
     print(f"指令：{command}\n")
@@ -63,7 +65,7 @@ def cli_run(video_path, srt_path=None):
 
 def invoke_run(video_path, srt_path=None, delete_assembly_folder=True):
     output_dir = cut_video(video_path, srt_path)
-    result_file_path = concat_video(output_dir)
+    result_file_path = concat_video(output_dir, simple_postfix=True)
     if delete_assembly_folder:
         shutil.rmtree(output_dir)
     return result_file_path
