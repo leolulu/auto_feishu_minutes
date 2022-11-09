@@ -96,16 +96,21 @@ class FeishuApp:
             try:
                 actions = ActionChains(self.edge_browser)
                 actions.move_to_element(
+                    self.edge_browser.find_element('xpath', xpath_page_title)
+                )
+                actions.move_to_element(
                     self.edge_browser.find_element('xpath', xpath_upload_button)
                 )
                 actions.click(
                     self.edge_browser.find_element('xpath', xpath_upload_menu_container)
                 )
+                actions.click(
+                    self.edge_browser.find_element('xpath', xpath_upload_modal_body)
+                )
                 actions.perform()
                 if_open_upload_menu_success = True
             except ElementNotInteractableException:
                 time.sleep(2)
-        self.edge_browser.wait_element_clickable(xpath_upload_modal_body).click()
         uploader = Uploader("打开")
         uploader.wait_present()
         upload_file_pyauto(self.file_dir, self.file_name, uploader.win)
