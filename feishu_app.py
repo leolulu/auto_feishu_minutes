@@ -161,7 +161,7 @@ class FeishuApp:
         video_info = VideoInfo()
         while not video_info.finish_transcode:
             self._get_video_status(video_info)
-            if (not video_info.video_transcoding):
+            if (video_info.finish_upload) and (not video_info.video_transcoding):
                 video_info.finish_transcode = True
                 self.detail_page_url = video_info.detail_page_url[0]
             else:
