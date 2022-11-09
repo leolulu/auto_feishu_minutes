@@ -22,7 +22,7 @@ class Uploader:
                 if_present = True
                 break
             except:
-                print(f"{i}...")
+                print(f"对话框置顶剩余重试次数：{i}...")
                 time.sleep(1)
 
         if not if_present:

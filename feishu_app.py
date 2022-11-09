@@ -4,6 +4,7 @@ import shutil
 import sys
 import time
 import types
+from typing import List
 
 from lxml import etree
 from selenium import webdriver
@@ -20,17 +21,42 @@ from utils.upload_util import Uploader, upload_file_pyauto
 from utils.webdriver_util import wait_element_clickable, wait_element_presence, wait_element_visible
 
 
+class VideoInfo:
+    def __init__(self) -> None:
+        self.finish_upload = False
+        self.finish_transcode = False
+        self.video_title = []
+        self.detail_page_url = []
+        self.video_duration = []
+        self.video_transcoding = []
+        self.upload_status: List[str] = []
+
+    def get_upload_status(self) -> str:
+        if len(self.upload_status) > 0:
+            return self.upload_status[0]
+        else:
+            return ""
+
+
 class FeishuApp:
     LOCAL_ASSETS = "local_assets"
     DATA_DIR = "data"
 
-    def __init__(self, file_path, if_need_sub=True, delete_org_video=False) -> None:
+    def __init__(
+        self,
+        file_path,
+        if_need_sub=True,
+        if_delete_video=False
+    ) -> None:
         self.set_log_level()
         self.if_need_sub = if_need_sub
-        self.delete_org_video = delete_org_video
+        self.if_delete_video = if_delete_video
         self.file_dir = os.path.dirname(file_path)
         self.file_name = os.path.basename(file_path)
         self.load_user_password()
+        self.video_uploaded = False
+
+    def _open_browser(self):
         edge_options = Options()
         edge_options.add_argument("user-data-dir={}".format(
             os.path.join(
@@ -44,8 +70,6 @@ class FeishuApp:
             options=edge_options
         )
         self._enrich_browser()
-        self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
-        self.edge_browser.maximize_window()
 
     def set_log_level(self):
         seleniumLogger.setLevel(logging.WARNING)
@@ -83,6 +107,9 @@ class FeishuApp:
         time.sleep(30)
 
     def open_main_page(self):
+        self._open_browser()
+        self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
+        self.edge_browser.maximize_window()
         try:
             self.edge_browser.wait_element_visible(xpath_page_title, 10)
             print("进入主页成功...")
@@ -114,43 +141,46 @@ class FeishuApp:
         upload_file_pyauto(self.file_dir, self.file_name, uploader.win)
         self.edge_browser.wait_element_clickable(xpath_upload_submit).click()
 
-    def check_upload_status(self):
-        if_find_it = False
-        if_finish = False
-        num = 0
-        while not if_finish:
-            html = etree.HTML(self.edge_browser.page_source)
-            video_sections = html.xpath(xpath_videos)[:9]
-            for video_section in video_sections:
-                video_title = video_section.xpath(xpath_video_title)
-                detail_page_url = video_section.xpath(xpath_video_url)
-                video_duration = video_section.xpath(xpath_video_duration)
-                video_transcoding = video_section.xpath(xpath_video_video_transcoding)
-                if video_title[0] == os.path.splitext(self.file_name)[0]:
-                    if self.if_need_sub:
-                        if not if_find_it:
-                            print("定位到新视频，当前状态：")
-                        if_find_it = True
-                        print(video_title, video_duration, video_transcoding)
-                    if (not self.if_need_sub) or (not video_transcoding):
-                        if_finish = True
-                        self.edge_browser.get(detail_page_url[0])
-                        break
-                else:
-                    if num % 10 == 0:
-                        if not if_find_it:
-                            upload_status_obj = html.xpath(xpath_upload_status)
-                            if len(upload_status_obj) > 0:
-                                upload_status = upload_status_obj[0]
-                            else:
-                                upload_status = ""
-                            print(f"上传中，进度：{upload_status}...")
+    def _get_video_status(self, video_info: VideoInfo):
+        html = etree.HTML(self.edge_browser.page_source)
+        video_info.upload_status = html.xpath(xpath_upload_status)
+        video_sections = html.xpath(xpath_videos)[:9]
+        for video_section in video_sections:
+            video_title = video_section.xpath(xpath_video_title)
+            detail_page_url = video_section.xpath(xpath_video_url)
+            video_duration = video_section.xpath(xpath_video_duration)
+            video_transcoding = video_section.xpath(xpath_video_video_transcoding)
+            if video_title[0] == os.path.splitext(self.file_name)[0]:
+                video_info.finish_upload = True
+                video_info.video_title = video_title
+                video_info.detail_page_url = detail_page_url
+                video_info.video_duration = video_duration
+                video_info.video_transcoding = video_transcoding
 
-                        num = 0
-                    num += 1
-                    time.sleep(1)
+    def check_transcode_status(self):
+        video_info = VideoInfo()
+        while not video_info.finish_transcode:
+            self._get_video_status(video_info)
+            if (not video_info.video_transcoding):
+                video_info.finish_transcode = True
+                self.detail_page_url = video_info.detail_page_url[0]
+            else:
+                print(video_info.video_title, video_info.video_duration, video_info.video_transcoding)
+                time.sleep(10)
+
+    def check_upload_status(self):
+        video_info = VideoInfo()
+        while not video_info.finish_upload:
+            self._get_video_status(video_info)
+            if video_info.finish_upload == True:
+                self.video_uploaded = True
+                print("定位到新视频，上传完毕...")
+            else:
+                print(f"上传中，进度：{video_info.get_upload_status()}...")
+                time.sleep(10)
 
     def download_sub(self):
+        self.edge_browser.get(self.detail_page_url)
         hover = ActionChains(self.edge_browser).move_to_element(
             self.edge_browser.find_element('xpath', xpath_detail_option)
         )
@@ -189,16 +219,23 @@ class FeishuApp:
         self.edge_browser.wait_element_clickable(xpath_button_delete).click()
         time.sleep(2)
 
-    def run(self):
+    def run(self, delay_process=False):
         self.open_main_page()
-        self.upload_file()
-        self.check_upload_status()
+        if not self.video_uploaded:
+            self.upload_file()
+            self.check_upload_status()
+        if delay_process:
+            self.edge_browser.quit()
+            time.sleep(1)
+            return
         if self.if_need_sub:
+            self.check_transcode_status()
             self.download_sub()
             self.move_srt_file()
-            if self.delete_org_video:
+            if self.if_delete_video:
                 self.delete_video()
         self.edge_browser.quit()
+        time.sleep(1)
 
 
 if __name__ == '__main__':

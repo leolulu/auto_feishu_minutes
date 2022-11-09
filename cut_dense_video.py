@@ -22,7 +22,7 @@ def concat_video(folder_path, simple_postfix=False):
             f.write(f"file '{i}'\n")
     file_name = f"{os.path.basename(folder_path)}_cut_dense.mp4"
     if simple_postfix:
-        file_name.replace("_concat_cut_dense", "_ccd")
+        file_name = file_name.replace("_concat_cut_dense", "_ccd")
     log_path = os.path.abspath(os.path.join(folder_path, "concat_video.log"))
     command = f'ffmpeg -f concat -safe 0 -i filelist.txt -c copy -y "{file_name}" 2>>"{log_path}"'
     print(f"指令：{command}\n")

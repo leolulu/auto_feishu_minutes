@@ -2,6 +2,7 @@ import collections
 import os
 import shutil
 import time
+from typing import List
 
 from cut_dense_video import invoke_run
 from feishu_app import FeishuApp
@@ -12,6 +13,8 @@ class FileWatcher:
         print(f"新增文件进入监视中：{file_path}")
         self.file_path = file_path
         self.size_info = collections.deque(maxlen=3)
+        self.await_delay_process = False
+        self.app = FeishuApp(self.file_path)
 
     def get_latest_size(self):
         self.size_info.append(os.path.getsize(self.file_path))
@@ -30,12 +33,20 @@ class FileWatcher:
         else:
             return False
 
-    def institute_feishu_process(self):
-        print(f"大小稳定了，启动新飞书任务：{self.file_path}")
-        app = FeishuApp(self.file_path)
-        app.run()
-        self.srt_path = app.srt_path
-        print("飞书任务处理完毕...")
+    def institute_feishu_process(self, switch_after_noumenon_uploaded):
+        if switch_after_noumenon_uploaded and (not self.await_delay_process):
+            print(f"大小稳定了，启动新飞书任务：{self.file_path}")
+            self.app.run(delay_process=True)
+            self.await_delay_process = True
+        else:
+            if switch_after_noumenon_uploaded:
+                print(f"获取首次上传的字幕：{self.file_path}")
+            else:
+                print(f"大小稳定了，启动新飞书任务：{self.file_path}")
+            self.app.run()
+            self.await_delay_process = False
+            self.srt_path = self.app.srt_path
+            print("飞书任务处理完毕...")
 
 
 class FileScanner:
@@ -43,9 +54,16 @@ class FileScanner:
     NOT_PROCESS_POSTFIX = [POSTFIX, "_cut_dense"]
     SUPPORTED_FORMAT = ['.mp4', '.avi']
 
-    def __init__(self, data_dir) -> None:
-        self.files = []
+    def __init__(
+        self,
+        data_dir,
+        level_target=4,
+        switch_after_noumenon_uploaded=False
+    ) -> None:
+        self.files: List[FileWatcher] = []
         self.data_dir = data_dir
+        self.level_target = level_target
+        self.switch_after_noumenon_uploaded = switch_after_noumenon_uploaded
 
     def append_file_list(self, file_path):
         if not file_path in [i.file_path for i in self.files]:
@@ -83,7 +101,7 @@ class FileScanner:
         if level < level_target:
             self._level_upload(dense_cutted_video_path, level+1, level_target)
 
-    def multi_post_upload(self, finish_file_path, level_target=4):
+    def multi_post_upload(self, finish_file_path, level_target):
         print("启用后处理上传...")
         level = 2
         self._level_upload(finish_file_path, level, level_target)
@@ -91,10 +109,12 @@ class FileScanner:
     def check_and_process_files(self):
         for file in self.files[::-1]:
             if file.check_size_stable():
-                file.institute_feishu_process()
+                file.institute_feishu_process(self.switch_after_noumenon_uploaded)
+                if self.switch_after_noumenon_uploaded and file.await_delay_process:
+                    continue
                 finish_file_path = self.add_finish_mark(file.file_path)
                 self.add_finish_mark(file.srt_path)
-                self.multi_post_upload(finish_file_path, level_target=4)
+                self.multi_post_upload(finish_file_path, self.level_target)
                 self.files.remove(file)
                 print("处理完成，继续监控...")
 
@@ -103,9 +123,14 @@ class FileScanner:
         while True:
             self.scan_data_dir()
             self.check_and_process_files()
-            time.sleep(10)
+            if len(self.files) == 0:
+                time.sleep(10)
 
 
 if __name__ == '__main__':
-    scanner = FileScanner(os.path.abspath('data'))
+    scanner = FileScanner(
+        os.path.abspath('data'),
+        level_target=4,
+        switch_after_noumenon_uploaded=True
+    )
     scanner.run()
