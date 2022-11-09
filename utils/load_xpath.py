@@ -9,11 +9,12 @@ xpath_confirm_pw = "//button[@data-test='login-pwd-next-btn']"
 
 # 触发上传相关
 xpath_page_title = "//div[@class='page-title']"
-xpath_upload_button = "//div[@class='upload-menu-button']"
+xpath_upload_button_div = "//div[@class='upload-menu-button']"
 xpath_upload_body = "//div[@class='upload-modal-body']"
 xpath_upload_submit = "//button[text()='提交']"
 xpath_upload_menu_container = "//div[@class='upload-menu-container']"
 xpath_upload_modal_body = "//div[@class='upload-modal-body']"
+xpath_upload_button = "//button[contains(@class,'upload-button')]"
 
 # 上传后状态检查相关
 xpath_videos = "//div[contains(@class,'meeting-list-item-wrapper')]"
