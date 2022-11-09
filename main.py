@@ -123,8 +123,7 @@ class FileScanner:
         while True:
             self.scan_data_dir()
             self.check_and_process_files()
-            if len(self.files) == 0:
-                time.sleep(10)
+            time.sleep(10)
 
 
 if __name__ == '__main__':
