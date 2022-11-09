@@ -19,7 +19,6 @@ def concat_video(folder_path):
         for i in os.listdir('.'):
             if i in ['filelist.txt', 'cut_video.log']:
                 continue
-            print(f"Add: {i}")
             f.write(f"file '{i}'\n")
     file_name = f"{os.path.basename(folder_path)}_cut_dense.mp4"
     log_path = os.path.abspath(os.path.join(folder_path, "concat_video.log"))

@@ -120,7 +120,7 @@ class FeishuApp:
         num = 0
         while not if_finish:
             html = etree.HTML(self.edge_browser.page_source)
-            video_sections = html.xpath(xpath_videos)[:5]
+            video_sections = html.xpath(xpath_videos)[:9]
             for video_section in video_sections:
                 video_title = video_section.xpath(xpath_video_title)
                 detail_page_url = video_section.xpath(xpath_video_url)
@@ -148,7 +148,7 @@ class FeishuApp:
 
                         num = 0
                     num += 1
-                    time.sleep(2)
+                    time.sleep(1)
 
     def download_sub(self):
         hover = ActionChains(self.edge_browser).move_to_element(
