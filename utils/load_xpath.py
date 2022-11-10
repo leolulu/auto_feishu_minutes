@@ -23,6 +23,7 @@ xpath_video_url = "./a/@href"
 xpath_video_duration = ".//div[@class='meeting-list-item-duration']/text()"
 xpath_video_video_transcoding = ".//div[@class='meeting-status-loading']/text()"
 xpath_upload_status = "//div[@class='upload-status']//text()"
+xpath_video_list = "//div[@class='list-table-body']"
 
 # 详情页相关
 xpath_detail_menu = "//div[contains(@class,'detail-meeting-menu')]"

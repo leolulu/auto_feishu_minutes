@@ -146,7 +146,11 @@ class FeishuApp:
         upload_file_pyauto(self.file_dir, self.file_name, uploader.win)
         self.edge_browser.wait_element_clickable(xpath_upload_submit).click()  # type: ignore
 
-    def _get_video_status(self, video_info: VideoInfo):
+    def _get_video_status(self, video_info: VideoInfo, need_scroll=False):
+        if need_scroll:
+            scrolling_element = self.edge_browser.find_element("xpath", xpath_video_list)
+            self.edge_browser.execute_script('arguments[0].scrollTop = arguments[0].scrollHeight', scrolling_element)
+            self.edge_browser.execute_script('arguments[0].scrollTop = 0', scrolling_element)
         html = etree.HTML(self.edge_browser.page_source)  # type: ignore
         video_info.upload_status = html.xpath(xpath_upload_status)
         video_sections = html.xpath(xpath_videos)
@@ -165,7 +169,7 @@ class FeishuApp:
     def check_transcode_status(self):
         video_info = VideoInfo()
         while not video_info.finish_transcode:
-            self._get_video_status(video_info)
+            self._get_video_status(video_info, True)
             if (video_info.finish_upload) and (not video_info.video_transcoding):
                 video_info.finish_transcode = True
                 self.detail_page_url = video_info.detail_page_url[0]
