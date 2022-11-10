@@ -18,5 +18,13 @@ def read_srt(srt_file_path: str):
     return result
 
 
+def if_srt_empty(srt_file_path: str):
+    result = read_srt(srt_file_path)
+    if len(result) > 0:
+        return False
+    else:
+        return True
+
+
 if __name__ == '__main__':
     print(read_srt(r"C:\fuck\新建文件夹\自慰初体验（直播） (1).srt"))

@@ -6,6 +6,7 @@ from typing import List
 
 from cut_dense_video import invoke_run
 from feishu_app import FeishuApp
+from utils.read_srt import if_srt_empty
 
 
 class FileWatcher:
@@ -92,7 +93,11 @@ class FileScanner:
 
     def _level_upload(self, video_file, level, level_target):
         print(f"启动【{level}】次上传...")
-        dense_cutted_video_path = invoke_run(video_file, delete_assembly_folder=False)
+        srt_path = os.path.splitext(video_file)[0] + '.srt'
+        if if_srt_empty(srt_path):
+            print("字幕内容为空，后处理到此为止...")
+            return
+        dense_cutted_video_path = invoke_run(video_file, srt_path, delete_assembly_folder=False)
         app = FeishuApp(
             dense_cutted_video_path,
             if_need_sub=False if level == level_target else True
