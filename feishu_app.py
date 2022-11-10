@@ -82,9 +82,9 @@ class FeishuApp:
 
     def _enrich_browser(self):
         browser = self.edge_browser
-        browser.wait_element_presence = types.MethodType(wait_element_presence, browser)
-        browser.wait_element_visible = types.MethodType(wait_element_visible, browser)
-        browser.wait_element_clickable = types.MethodType(wait_element_clickable, browser)
+        browser.wait_element_presence = types.MethodType(wait_element_presence, browser)  # type: ignore
+        browser.wait_element_visible = types.MethodType(wait_element_visible, browser)  # type: ignore
+        browser.wait_element_clickable = types.MethodType(wait_element_clickable, browser)  # type: ignore
 
     def load_user_password(self):
         if not os.path.exists(FeishuApp.LOCAL_ASSETS):
@@ -102,13 +102,13 @@ class FeishuApp:
         self.password = password
 
     def login(self):
-        self.edge_browser.wait_element_clickable(xpath_switch_icon).click()
-        self.edge_browser.wait_element_clickable(xpath_input_mobile_phone).send_keys(self.user)
+        self.edge_browser.wait_element_clickable(xpath_switch_icon).click()  # type: ignore
+        self.edge_browser.wait_element_clickable(xpath_input_mobile_phone).send_keys(self.user)  # type: ignore
         self.edge_browser.find_element('xpath', xpath_service_policy).click()
-        self.edge_browser.wait_element_clickable(xpath_confirm_phone).click()
-        self.edge_browser.wait_element_clickable(xpath_switch_pw_login).click()
-        self.edge_browser.wait_element_clickable(xpath_pw_input).send_keys(self.password)
-        self.edge_browser.wait_element_clickable(xpath_confirm_pw).click()
+        self.edge_browser.wait_element_clickable(xpath_confirm_phone).click()  # type: ignore
+        self.edge_browser.wait_element_clickable(xpath_switch_pw_login).click()  # type: ignore
+        self.edge_browser.wait_element_clickable(xpath_pw_input).send_keys(self.password)  # type: ignore
+        self.edge_browser.wait_element_clickable(xpath_confirm_pw).click()  # type: ignore
         time.sleep(30)
 
     def open_main_page(self):
@@ -116,7 +116,7 @@ class FeishuApp:
         self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
         self.edge_browser.maximize_window()
         try:
-            self.edge_browser.wait_element_visible(xpath_page_title, 10)
+            self.edge_browser.wait_element_visible(xpath_page_title, 10)  # type: ignore
             print("进入主页成功...")
         except TimeoutException:
             print("打开主页失败，进入登陆流程，可能需要手动输入验证码...")
@@ -136,7 +136,7 @@ class FeishuApp:
                 )
                 actions.perform()
                 time.sleep(1)
-                self.edge_browser.wait_element_clickable(xpath_upload_modal_body).click()
+                self.edge_browser.wait_element_clickable(xpath_upload_modal_body).click()  # type: ignore
                 if_open_upload_menu_success = True
             except Exception as e:
                 print(e)
@@ -144,12 +144,12 @@ class FeishuApp:
         uploader = Uploader("打开")
         uploader.wait_present()
         upload_file_pyauto(self.file_dir, self.file_name, uploader.win)
-        self.edge_browser.wait_element_clickable(xpath_upload_submit).click()
+        self.edge_browser.wait_element_clickable(xpath_upload_submit).click()  # type: ignore
 
     def _get_video_status(self, video_info: VideoInfo):
-        html = etree.HTML(self.edge_browser.page_source)
+        html = etree.HTML(self.edge_browser.page_source)  # type: ignore
         video_info.upload_status = html.xpath(xpath_upload_status)
-        video_sections = html.xpath(xpath_videos)[:9]
+        video_sections = html.xpath(xpath_videos)
         for video_section in video_sections:
             video_title = video_section.xpath(xpath_video_title)
             detail_page_url = video_section.xpath(xpath_video_url)
@@ -191,10 +191,10 @@ class FeishuApp:
         )
         hover.perform()
         time.sleep(2)
-        self.edge_browser.wait_element_clickable(xpath_export_miaoji).click()
-        self.edge_browser.wait_element_clickable(xpath_format_selector).click()
-        self.edge_browser.wait_element_clickable(xpath_srt_option).click()
-        self.edge_browser.wait_element_clickable(xpath_button_export).click()
+        self.edge_browser.wait_element_clickable(xpath_export_miaoji).click()  # type: ignore
+        self.edge_browser.wait_element_clickable(xpath_format_selector).click()  # type: ignore
+        self.edge_browser.wait_element_clickable(xpath_srt_option).click()  # type: ignore
+        self.edge_browser.wait_element_clickable(xpath_button_export).click()  # type: ignore
 
     def move_srt_file(self):
         if_find_it = False
@@ -221,8 +221,8 @@ class FeishuApp:
         )
         hover.perform()
         time.sleep(2)
-        self.edge_browser.wait_element_clickable(xpath_delete_miaoji).click()
-        self.edge_browser.wait_element_clickable(xpath_button_delete).click()
+        self.edge_browser.wait_element_clickable(xpath_delete_miaoji).click()  # type: ignore
+        self.edge_browser.wait_element_clickable(xpath_button_delete).click()  # type: ignore
         time.sleep(2)
         self.video_deleted = True
 
