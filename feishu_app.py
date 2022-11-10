@@ -54,7 +54,12 @@ class FeishuApp:
         self.file_dir = os.path.dirname(file_path)
         self.file_name = os.path.basename(file_path)
         self.load_user_password()
+        self._init_process_status()
+
+    def _init_process_status(self):
         self.video_uploaded = False
+        self.sub_downloaded = False
+        self.video_deleted = False
 
     def _open_browser(self):
         edge_options = Options()
@@ -208,6 +213,7 @@ class FeishuApp:
                         num = 0
                     num += 1
                     time.sleep(0.5)
+        self.sub_downloaded = True
 
     def delete_video(self):
         hover = ActionChains(self.edge_browser).move_to_element(
@@ -218,8 +224,9 @@ class FeishuApp:
         self.edge_browser.wait_element_clickable(xpath_delete_miaoji).click()
         self.edge_browser.wait_element_clickable(xpath_button_delete).click()
         time.sleep(2)
+        self.video_deleted = True
 
-    def run(self, delay_process=False):
+    def dispatch(self, delay_process):
         self.open_main_page()
         if not self.video_uploaded:
             self.upload_file()
@@ -229,13 +236,26 @@ class FeishuApp:
             time.sleep(1)
             return
         if self.if_need_sub:
-            self.check_transcode_status()
-            self.download_sub()
-            self.move_srt_file()
+            if not self.sub_downloaded:
+                self.check_transcode_status()
+                self.download_sub()
+                self.move_srt_file()
             if self.if_delete_video:
-                self.delete_video()
+                if not self.video_deleted:
+                    self.delete_video()
         self.edge_browser.quit()
         time.sleep(1)
+
+    def run(self, delay_process=False):
+        task_success = False
+        while not task_success:
+            try:
+                self.dispatch(delay_process)
+                task_success = True
+            except Exception as e:
+                self.edge_browser.quit()
+                print(f"出错了，重新调度任务：{e}")
+                time.sleep(2)
 
 
 if __name__ == '__main__':
