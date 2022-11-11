@@ -263,8 +263,8 @@ class FeishuApp:
             except Exception as e:
                 self.edge_browser.quit()
                 print(f"出错了，重新调度任务：{e}")
+                time.sleep(self.fail_times * self.file_idx * 10)
                 self.fail_times += 1
-                time.sleep(self.fail_times * self.file_idx * 20)
 
 
 if __name__ == '__main__':
