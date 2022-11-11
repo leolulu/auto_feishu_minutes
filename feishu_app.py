@@ -264,7 +264,7 @@ class FeishuApp:
                 self.edge_browser.quit()
                 print(f"出错了，重新调度任务：{e}")
                 self.fail_times += 1
-                time.sleep(self.fail_times * self.file_idx * 60)
+                time.sleep(self.fail_times * self.file_idx * 40)
 
 
 if __name__ == '__main__':
