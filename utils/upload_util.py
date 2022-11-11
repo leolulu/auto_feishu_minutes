@@ -36,6 +36,7 @@ def write(text_content):
 
 
 def upload_file_pyauto(data_path, data_name, win):
+    time.sleep(2)
     win.set_foreground()
     pyautogui.hotkey('ctrl', 'l')
     time.sleep(1)
@@ -43,7 +44,7 @@ def upload_file_pyauto(data_path, data_name, win):
     write(data_path)
     win.set_foreground()
     pyautogui.press('enter')
-    time.sleep(3)
+    time.sleep(2)
     win.set_foreground()
     pyautogui.hotkey('alt', 'n')
     time.sleep(1)
