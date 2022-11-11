@@ -118,7 +118,7 @@ class FeishuApp:
     def open_main_page(self):
         self._open_browser()
         self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
-        self.edge_browser.maximize_window()
+        # self.edge_browser.maximize_window()
         try:
             self.edge_browser.wait_element_visible(xpath_page_title, 10)  # type: ignore
             print("进入主页成功...")
