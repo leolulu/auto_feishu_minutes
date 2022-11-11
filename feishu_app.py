@@ -51,12 +51,14 @@ class FeishuApp:
     ) -> None:
         self.set_log_level()
         self.user_data_dir_id = file_idx if file_idx is not None else 'default'
+        self.file_idx = file_idx if file_idx is not None else 0
         self.if_need_sub = if_need_sub
         self.if_delete_video = if_delete_video
         self.file_dir = os.path.dirname(file_path)
         self.file_name = os.path.basename(file_path)
         self.load_user_password()
         self._init_process_status()
+        self.fail_times = 0
 
     def _init_process_status(self):
         self.video_uploaded = False
@@ -261,7 +263,8 @@ class FeishuApp:
             except Exception as e:
                 self.edge_browser.quit()
                 print(f"出错了，重新调度任务：{e}")
-                time.sleep(2)
+                self.fail_times += 1
+                time.sleep(self.fail_times * self.file_idx * 60)
 
 
 if __name__ == '__main__':
