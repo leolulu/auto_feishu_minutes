@@ -46,9 +46,11 @@ class FeishuApp:
         self,
         file_path,
         if_need_sub=True,
-        if_delete_video=False
+        if_delete_video=False,
+        file_idx=None
     ) -> None:
         self.set_log_level()
+        self.user_data_dir_id = file_idx if file_idx is not None else 'default'
         self.if_need_sub = if_need_sub
         self.if_delete_video = if_delete_video
         self.file_dir = os.path.dirname(file_path)
@@ -67,7 +69,7 @@ class FeishuApp:
             os.path.join(
                 os.path.abspath(os.getcwd()),
                 FeishuApp.LOCAL_ASSETS,
-                "user-data-dir"
+                f"user-data-dir-{self.user_data_dir_id}"
             )
         ))
         self.edge_browser = webdriver.Edge(
@@ -109,7 +111,7 @@ class FeishuApp:
         self.edge_browser.wait_element_clickable(xpath_switch_pw_login).click()  # type: ignore
         self.edge_browser.wait_element_clickable(xpath_pw_input).send_keys(self.password)  # type: ignore
         self.edge_browser.wait_element_clickable(xpath_confirm_pw).click()  # type: ignore
-        time.sleep(30)
+        time.sleep(180)
 
     def open_main_page(self):
         self._open_browser()

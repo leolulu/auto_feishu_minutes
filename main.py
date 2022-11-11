@@ -2,6 +2,7 @@ import collections
 import os
 import shutil
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 from cut_dense_video import invoke_run
@@ -13,13 +14,15 @@ class PostUploader:
     def __init__(
         self,
         video_path: str,
-        level_target
+        level_target,
+        file_idx
     ) -> None:
         self.video_path = video_path
         self.level_target = level_target
         self.current_level = 2
         self.all_finish = False
         self.app: FeishuApp = None  # type: ignore
+        self.file_idx = file_idx
 
     def upload_laucher(self, switch_between_post_uploads):
         self.level_upload(switch_between_post_uploads)
@@ -41,7 +44,8 @@ class PostUploader:
             self.video_path = invoke_run(self.video_path, srt_path, delete_assembly_folder=False)
             self.app = FeishuApp(
                 self.video_path,
-                if_need_sub=False if self.current_level == self.level_target else True
+                if_need_sub=False if self.current_level == self.level_target else True,
+                file_idx=self.file_idx
             )
         else:
             print("本次上传是字幕环节...")
@@ -52,14 +56,15 @@ class PostUploader:
 
 
 class FileWatcher:
-    def __init__(self, file_path) -> None:
+    def __init__(self, file_path, file_idx) -> None:
         print(f"新增文件进入监视中：{file_path}")
         self.queue_size = 3
         self.file_path = file_path
         self.size_info = collections.deque(maxlen=self.queue_size)
         self.await_delay_process = False
-        self.app = FeishuApp(self.file_path)
+        self.app = FeishuApp(self.file_path, file_idx=file_idx)
         self.post_uploader: PostUploader = None  # type: ignore
+        self.file_idx = file_idx
 
     def _get_latest_size(self):
         self.size_info.append(os.path.getsize(self.file_path))
@@ -114,16 +119,29 @@ class FileScanner:
         level_target=4,
         switch_after_noumenon_uploaded=False,
         switch_between_post_uploads=False,
+        use_concurrency=False
     ) -> None:
+        self.file_idx = 0
         self.files: List[FileWatcher] = []
+        self.submitted_files: List[FileWatcher] = []
         self.data_dir = data_dir
         self.level_target = level_target
         self.switch_after_noumenon_uploaded = switch_after_noumenon_uploaded
         self.switch_between_post_uploads = switch_between_post_uploads
+        self.use_concurrency = use_concurrency
+        if self.use_concurrency:
+            self.exe_num = 3
+            self.executor = ThreadPoolExecutor(self.exe_num)
+            self.switch_after_noumenon_uploaded = False
+            self.switch_between_post_uploads = False
 
     def append_file_list(self, file_path):
-        if not file_path in [i.file_path for i in self.files]:
-            self.files.append(FileWatcher(file_path))
+        if not file_path in [i.file_path for i in (self.files+self.submitted_files)]:
+            file_idx = None
+            if self.use_concurrency:
+                self.file_idx += 1
+                file_idx = self.file_idx % self.exe_num + 1
+            self.files.append(FileWatcher(file_path, file_idx))
 
     def _renamed_name(self, file_path):
         return FileScanner.POSTFIX.join(os.path.splitext(file_path))
@@ -149,13 +167,30 @@ class FileScanner:
     def multi_post_upload(self, finish_file_path, level_target, file: FileWatcher):
         print("进入后处理上传环节...")
         if file.post_uploader is None:
-            file.post_uploader = PostUploader(finish_file_path, level_target)
+            file.post_uploader = PostUploader(finish_file_path, level_target, file.file_idx)
         if self.switch_between_post_uploads:
             file.post_uploader.upload_laucher(self.switch_between_post_uploads)
         else:
             while not file.post_uploader.all_finish:
                 file.post_uploader.upload_laucher(self.switch_between_post_uploads)
         return file.post_uploader.all_finish
+
+    def check_and_process_files_concurrent(self):
+        def process(file: FileWatcher):
+            file.institute_feishu_process(self.switch_after_noumenon_uploaded)
+            finish_file_path = self.add_finish_mark(file.file_path)
+            self.add_finish_mark(file.srt_path)
+            self.multi_post_upload(finish_file_path, self.level_target, file)  # type: ignore
+            self.submitted_files.remove(file)
+            print("异步任务已完成...")
+
+        for file in self.files[::-1]:
+            if file.check_size_stable():
+                self.executor.submit(process, file)
+                self.submitted_files.append(file)
+                self.files.remove(file)
+                print("异步任务已提交，继续监控...")
+                time.sleep(40)
 
     def check_and_process_files(self):
         for file in self.files[::-1]:
@@ -175,14 +210,17 @@ class FileScanner:
     def _check_need_to_wait(self):
         if_files_empty = len(self.files) == 0
         sizes = set([i.check_size_stable(False) for i in self.files])
-        if_all_size_stable = (len(sizes) == 1) and sizes.pop
+        if_all_size_stable = ((len(sizes) == 1) and sizes.pop())
         return if_files_empty or (not if_all_size_stable)
 
     def run(self):
         print(f"开始监控文件夹：{self.data_dir}")
         while True:
             self.scan_data_dir()
-            self.check_and_process_files()
+            if self.use_concurrency:
+                self.check_and_process_files_concurrent()
+            else:
+                self.check_and_process_files()
             if self._check_need_to_wait():
                 time.sleep(10)
 
@@ -191,7 +229,8 @@ if __name__ == '__main__':
     scanner = FileScanner(
         os.path.abspath('data'),
         level_target=3,
-        switch_after_noumenon_uploaded=True,
-        switch_between_post_uploads=True
+        switch_after_noumenon_uploaded=False,
+        switch_between_post_uploads=False,
+        use_concurrency=True
     )
     scanner.run()
