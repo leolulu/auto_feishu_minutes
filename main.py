@@ -46,7 +46,7 @@ class PostUploader:
         else:
             print("本次上传是字幕环节...")
         if switch_between_post_uploads:
-            self.app.run(delay_process= not self.app.video_uploaded)
+            self.app.run(delay_process=not self.app.video_uploaded)
         else:
             self.app.run()
 
@@ -54,28 +54,38 @@ class PostUploader:
 class FileWatcher:
     def __init__(self, file_path) -> None:
         print(f"新增文件进入监视中：{file_path}")
+        self.queue_size = 3
         self.file_path = file_path
-        self.size_info = collections.deque(maxlen=3)
+        self.size_info = collections.deque(maxlen=self.queue_size)
         self.await_delay_process = False
         self.app = FeishuApp(self.file_path)
         self.post_uploader: PostUploader = None  # type: ignore
 
-    def get_latest_size(self):
+    def _get_latest_size(self):
         self.size_info.append(os.path.getsize(self.file_path))
 
-    def check_size_stable(self):
+    def check_size_stable(self, get_info=True):
+        if get_info:
+            self._get_size_info()
+        if (
+            (len(self.size_info) == self.queue_size)
+            and (len(set(self.size_info)) == 1)
+            and (set(self.size_info).pop != -1)
+        ):
+            return True
+        else:
+            return False
+
+    def _get_size_info(self):
         print(f"\n检查文件状态稳定性：{os.path.basename(self.file_path)}")
         try:
             os.rename(self.file_path, self.file_path)
         except:
             print("文件复制粘贴未完成...")
-            return False
-        self.get_latest_size()
+            self.size_info.append(-1)
+            return
+        self._get_latest_size()
         print(f"文件大小状态：{list(self.size_info)}")
-        if (len(self.size_info) == 3) and (len(set(self.size_info)) == 1):
-            return True
-        else:
-            return False
 
     def institute_feishu_process(self, switch_after_noumenon_uploaded):
         if switch_after_noumenon_uploaded and (not self.await_delay_process):
@@ -162,12 +172,19 @@ class FileScanner:
                 self.files.remove(file)
                 print("处理完成，继续监控...")
 
+    def _check_need_to_wait(self):
+        if_files_empty = len(self.files) == 0
+        sizes = set([i.check_size_stable(False) for i in self.files])
+        if_all_size_stable = (len(sizes) == 1) and sizes.pop
+        return if_files_empty or (not if_all_size_stable)
+
     def run(self):
         print(f"开始监控文件夹：{self.data_dir}")
         while True:
             self.scan_data_dir()
             self.check_and_process_files()
-            time.sleep(10)
+            if self._check_need_to_wait():
+                time.sleep(10)
 
 
 if __name__ == '__main__':
