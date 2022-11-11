@@ -26,7 +26,7 @@ class PostUploader:
 
     def upload_laucher(self, switch_between_post_uploads):
         self.level_upload(switch_between_post_uploads)
-        if self.app.sub_downloaded:
+        if self.app.sub_downloaded or (self.current_level == self.level_target):
             self.current_level += 1
             self.app = None  # type: ignore
             if self.current_level > self.level_target:
