@@ -75,7 +75,7 @@ class FileWatcher:
         if (
             (len(self.size_info) == self.queue_size)
             and (len(set(self.size_info)) == 1)
-            and (set(self.size_info).pop != -1)
+            and (set(self.size_info).pop() != -1)
         ):
             return True
         else:
