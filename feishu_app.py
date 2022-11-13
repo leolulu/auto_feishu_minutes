@@ -51,7 +51,7 @@ class FeishuApp:
         if_delete_video=False
     ) -> None:
         self.set_log_level()
-        self.user_dir = user_dir_dispatcher.get_an_idle_dir()
+        self.user_dir_dispatcher = user_dir_dispatcher
         self.if_need_sub = if_need_sub
         self.if_delete_video = if_delete_video
         self.file_dir = os.path.dirname(file_path)
@@ -66,6 +66,7 @@ class FeishuApp:
         self.video_deleted = False
 
     def _open_browser(self):
+        self.user_dir = self.user_dir_dispatcher.get_an_idle_dir()
         edge_options = Options()
         edge_options.add_argument("user-data-dir={}".format(
             os.path.join(
