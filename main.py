@@ -174,12 +174,16 @@ class FileScanner:
 
     def check_and_process_files_concurrent(self):
         def process(file: FileWatcher):
-            file.institute_feishu_process(self.switch_after_noumenon_uploaded)
-            finish_file_path = self.add_finish_mark(file.file_path)
-            self.add_finish_mark(file.srt_path)
-            self.multi_post_upload(finish_file_path, self.level_target, file)  # type: ignore
-            self.submitted_files.remove(file)
-            print("异步任务已完成...")
+            try:
+                file.institute_feishu_process(self.switch_after_noumenon_uploaded)
+                finish_file_path = self.add_finish_mark(file.file_path)
+                self.add_finish_mark(file.srt_path)
+                self.multi_post_upload(finish_file_path, self.level_target, file)  # type: ignore
+                self.submitted_files.remove(file)
+                print("异步任务已完成...")
+            except Exception as e:
+                print("异步任务出问题了！！！！！需要检查！")
+                print(e)
 
         for file in self.files[::-1]:
             if file.check_size_stable():
