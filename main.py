@@ -2,13 +2,14 @@ import collections
 import os
 import shutil
 import time
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 from cut_dense_video import invoke_run
 from feishu_app import FeishuApp
-from utils.read_srt import if_srt_empty
 from utils.chrome_controller import UserDirDispatcher
+from utils.read_srt import if_srt_empty
 
 
 class PostUploader:
@@ -184,6 +185,8 @@ class FileScanner:
             except Exception as e:
                 print("异步任务出问题了！！！！！需要检查！")
                 print(e)
+                with open('error.log', 'a', encoding='utf-8') as f:
+                    f.write("{}\n{}\n{}\n\n\n".format(file.file_path, str(e), traceback.format_exc()))
 
         for file in self.files[::-1]:
             if file.check_size_stable():
