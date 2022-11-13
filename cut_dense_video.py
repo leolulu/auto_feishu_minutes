@@ -8,10 +8,11 @@ from tqdm import tqdm
 from utils.read_srt import read_srt
 
 
-def concat_video(folder_path, simple_postfix=False):
+def concat_video(folder_path, simple_postfix=False, if_print=True):
     _cwd = os.getcwd()
     os.chdir(folder_path)
-    print(f"工作目录：{os.getcwd()}")
+    if if_print:
+        print(f"工作目录：{os.getcwd()}")
 
     if os.path.exists('filelist.txt'):
         os.remove('filelist.txt')
@@ -25,14 +26,15 @@ def concat_video(folder_path, simple_postfix=False):
         file_name = file_name.replace("_concat_cut_dense", "_ccd")
     log_path = os.path.abspath(os.path.join(folder_path, "concat_video.log"))
     command = f'ffmpeg -f concat -safe 0 -i filelist.txt -c copy -y "{file_name}" 2>>"{log_path}"'
-    print(f"指令：{command}\n")
+    if if_print:
+        print(f"指令：{command}\n")
     subprocess.call(command, shell=True)
     shutil.move(file_name, os.path.dirname(folder_path))
     os.chdir(_cwd)
     return os.path.join(os.path.dirname(folder_path), file_name)
 
 
-def cut_video(video_path, srt_path):
+def cut_video(video_path, srt_path, if_print=True):
     video_path = os.path.abspath(video_path)
     video_name = os.path.basename(video_path)
     output_dir = os.path.join(os.path.dirname(video_path), os.path.splitext(video_name)[0]+'_concat')
@@ -53,7 +55,8 @@ def cut_video(video_path, srt_path):
         )
         log_path = os.path.abspath(os.path.join(output_dir, "cut_video.log"))
         command = f'ffmpeg -y -ss {start_time} -to {end_time} -i "{video_path}" -preset veryfast "{output_video_path}" 2>>"{log_path}"'
-        print(f"\n{command}")
+        if if_print:
+            print(f"\n{command}")
         subprocess.call(command, shell=True)
     return output_dir
 
@@ -64,8 +67,8 @@ def cli_run(video_path, srt_path=None):
 
 
 def invoke_run(video_path, srt_path=None, delete_assembly_folder=True):
-    output_dir = cut_video(video_path, srt_path)
-    result_file_path = concat_video(output_dir, simple_postfix=True)
+    output_dir = cut_video(video_path, srt_path, if_print=False)
+    result_file_path = concat_video(output_dir, simple_postfix=True, if_print=False)
     if delete_assembly_folder:
         shutil.rmtree(output_dir)
     return result_file_path
