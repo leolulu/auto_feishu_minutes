@@ -8,13 +8,14 @@ from typing import List
 
 from lxml import etree
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, ElementNotInteractableException
+from selenium.common.exceptions import ElementNotInteractableException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
 from urllib3.connectionpool import log as urllibLogger
 
+from utils.chrome_controller import UserDirDispatcher
 from utils.download_util import get_download_path
 from utils.load_xpath import *
 from utils.upload_util import Uploader, upload_file_pyauto
@@ -45,13 +46,12 @@ class FeishuApp:
     def __init__(
         self,
         file_path,
+        user_dir_dispatcher: UserDirDispatcher,
         if_need_sub=True,
-        if_delete_video=False,
-        file_idx=None
+        if_delete_video=False
     ) -> None:
         self.set_log_level()
-        self.user_data_dir_id = file_idx if file_idx is not None else 'default'
-        self.file_idx = file_idx if file_idx is not None else 0
+        self.user_dir = user_dir_dispatcher.get_an_idle_dir()
         self.if_need_sub = if_need_sub
         self.if_delete_video = if_delete_video
         self.file_dir = os.path.dirname(file_path)
@@ -71,7 +71,7 @@ class FeishuApp:
             os.path.join(
                 os.path.abspath(os.getcwd()),
                 FeishuApp.LOCAL_ASSETS,
-                f"user-data-dir-{self.user_data_dir_id}"
+                self.user_dir.dir
             )
         ))
         self.edge_browser = webdriver.Edge(
@@ -263,11 +263,13 @@ class FeishuApp:
             except Exception as e:
                 self.edge_browser.quit()
                 print(f"出错了，重新调度任务：{e}")
-                time.sleep(self.fail_times * self.file_idx * 10)
+                time.sleep(self.fail_times * self.user_dir.id * 10)
                 self.fail_times += 1
+            finally:
+                self.user_dir.free()
 
 
 if __name__ == '__main__':
     file_path = sys.argv[1]
-    app = FeishuApp(file_path)
+    app = FeishuApp(file_path, UserDirDispatcher(1))
     app.run()
