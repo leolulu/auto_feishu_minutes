@@ -196,7 +196,7 @@ class FileScanner:
                 self.submitted_files.append(file)
                 self.files.remove(file)
                 print("异步任务已提交，继续监控...")
-                time.sleep(70)
+                time.sleep(60)
 
     def check_and_process_files(self):
         for file in self.files[::-1]:
