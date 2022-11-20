@@ -234,7 +234,7 @@ class FileScanner:
 if __name__ == '__main__':
     scanner = FileScanner(
         os.path.abspath('data'),
-        level_target=3,
+        level_target=2,
         switch_after_noumenon_uploaded=False,
         switch_between_post_uploads=False,
         use_concurrency=True
