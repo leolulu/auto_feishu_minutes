@@ -96,6 +96,8 @@ class FileWatcher:
         print(f"文件大小状态：{list(self.size_info)}")
 
     def institute_feishu_process(self, switch_after_noumenon_uploaded):
+        if not os.path.exists(self.file_path):
+            raise UserWarning(f"{self.file_path}不存在，终止任务！！！")
         if switch_after_noumenon_uploaded and (not self.await_delay_process):
             print(f"大小稳定了，启动新飞书任务：{self.file_path}")
             self.app.run(delay_process=True)
