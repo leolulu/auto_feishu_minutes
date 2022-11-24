@@ -4,6 +4,7 @@ import shutil
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from typing import List
 
 from cut_dense_video import invoke_run
@@ -160,7 +161,15 @@ class FileScanner:
         return pass_
 
     def scan_data_dir(self):
-        for file in os.listdir(os.path.abspath(self.data_dir)):
+        while True:
+            try:
+                files = os.listdir(os.path.abspath(self.data_dir))
+                break
+            except FileNotFoundError as e:
+                print(f"[{datetime.now().strftime('%F %X')}] {e}")
+                time.sleep(5)
+
+        for file in files:
             (name, ext) = os.path.splitext(file)
             file_path = os.path.join(self.data_dir, file)
             if ext.lower() in FileScanner.SUPPORTED_FORMAT and (self._postfix_check(name)):
