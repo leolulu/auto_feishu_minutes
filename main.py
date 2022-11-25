@@ -165,7 +165,7 @@ class FileScanner:
             try:
                 files = os.listdir(os.path.abspath(self.data_dir))
                 break
-            except FileNotFoundError as e:
+            except Exception as e:
                 print(f"[{datetime.now().strftime('%F %X')}] {e}")
                 time.sleep(5)
 
