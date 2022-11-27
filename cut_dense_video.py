@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 
 from tqdm import tqdm
 
@@ -66,9 +67,10 @@ def cli_run(video_path, srt_path=None):
     concat_video(output_dir)
 
 
-def invoke_run(video_path, srt_path=None, delete_assembly_folder=True):
+def invoke_run(video_path, srt_path=None, delete_assembly_folder=True, lock_=threading.Lock()):
     output_dir = cut_video(video_path, srt_path, if_print=False)
-    result_file_path = concat_video(output_dir, simple_postfix=True, if_print=False)
+    with lock_:
+        result_file_path = concat_video(output_dir, simple_postfix=True, if_print=False)
     if delete_assembly_folder:
         shutil.rmtree(output_dir)
     return result_file_path
