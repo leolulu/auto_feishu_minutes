@@ -253,18 +253,18 @@ class FileScanner:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--data_dir', help='监控目录的路径，可以使用相对路径，默认为当前目录的data文件夹', default='data')
     parser.add_argument('-l', '--level_target', help='需要进行的N次处理层数，默认为2', default=2, type=int)
-    parser.add_argument('--switch_after_noumenon_uploaded', help='单线程处理模式专用，是否在原始文件上传后立刻切换上传下一个原始文件，默认关闭', action='store_false')
-    parser.add_argument('--switch_between_post_uploads', help='单线程处理模式专用，是否在上传后处理文件时进行轮番上传，默认关闭', action='store_false')
-    parser.add_argument('--use_concurrency', help='是否使用多线程处理模式，默认开启。开启后，单线程处理模式的上两个选项会被关闭', action='store_true')
+    parser.add_argument('--switch_after_noumenon_uploaded', help='单线程处理模式专用，是否在原始文件上传后立刻切换上传下一个原始文件，默认关闭', action='store_true')
+    parser.add_argument('--switch_between_post_uploads', help='单线程处理模式专用，是否在上传后处理文件时进行轮番上传，默认关闭', action='store_true')
+    parser.add_argument('--not_use_concurrency', help='是否禁用多线程处理模式，默认开启多线程处理模式。多线程处理模式开启时，单线程处理模式的上两个选项会被关闭', action='store_false')
     args = parser.parse_args()
     scanner = FileScanner(
         os.path.abspath(args.data_dir),
         level_target=args.level_target,
         switch_after_noumenon_uploaded=args.switch_after_noumenon_uploaded,
         switch_between_post_uploads=args.switch_between_post_uploads,
-        use_concurrency=args.use_concurrency
+        use_concurrency=args.not_use_concurrency
     )
     scanner.run()
