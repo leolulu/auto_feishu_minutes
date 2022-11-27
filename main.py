@@ -89,10 +89,12 @@ class FileWatcher:
         print(f"\n检查文件状态稳定性：{os.path.basename(self.file_path)}")
         try:
             os.rename(self.file_path, self.file_path)
-        except:
+        except PermissionError:
             print("文件复制粘贴未完成...")
             self.size_info.append(-1)
             return
+        except Exception as e:
+            raise e
         self._get_latest_size()
         print(f"文件大小状态：{list(self.size_info)}")
 
@@ -202,7 +204,7 @@ class FileScanner:
                     f.write("{}\n{}\n{}\n\n\n".format(file.file_path, str(e), traceback.format_exc()))
 
         for file in self.files[::-1]:
-            if file.check_size_stable():
+            if self._check_size_stable_wrapper(file):
                 self.executor.submit(process, file)
                 self.submitted_files.append(file)
                 self.files.remove(file)
@@ -211,7 +213,7 @@ class FileScanner:
 
     def check_and_process_files(self):
         for file in self.files[::-1]:
-            if file.check_size_stable():
+            if self._check_size_stable_wrapper(file):
                 if file.post_uploader is None:
                     file.institute_feishu_process(self.switch_after_noumenon_uploaded)
                     if self.switch_after_noumenon_uploaded and file.await_delay_process:
@@ -223,6 +225,13 @@ class FileScanner:
                     continue
                 self.files.remove(file)
                 print("处理完成，继续监控...")
+
+    def _check_size_stable_wrapper(self, file: FileWatcher):
+        try:
+            return file.check_size_stable()
+        except FileNotFoundError:
+            print(f"文件[{file.file_path}]不存在，移出监控列表...")
+            self.files.remove(file)
 
     def _check_need_to_wait(self):
         if_files_empty = len(self.files) == 0
