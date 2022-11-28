@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import sys
+import threading
 import time
 import types
 from typing import List
@@ -20,6 +21,8 @@ from utils.download_util import get_download_path
 from utils.load_xpath import *
 from utils.upload_util import Uploader, upload_file_pyauto
 from utils.webdriver_util import wait_element_clickable, wait_element_presence, wait_element_visible
+
+upload_select_lock = threading.Lock()
 
 
 class VideoInfo:
@@ -238,7 +241,8 @@ class FeishuApp:
     def dispatch(self, delay_process):
         self.open_main_page()
         if not self.video_uploaded:
-            self.upload_file()
+            with upload_select_lock:
+                self.upload_file()
             self.check_upload_status()
         if delay_process:
             self.edge_browser.quit()
