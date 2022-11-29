@@ -3,13 +3,14 @@ import shutil
 import subprocess
 import sys
 import threading
+from queue import Queue
 
 from tqdm import tqdm
 
 from utils.read_srt import read_srt
 
 
-def concat_video(folder_path, simple_postfix=False, if_print=True):
+def concat_video(folder_path, simple_postfix=False, if_print=True, queue_=Queue()):
     _cwd = os.getcwd()
     os.chdir(folder_path)
     if if_print:
@@ -32,6 +33,7 @@ def concat_video(folder_path, simple_postfix=False, if_print=True):
     subprocess.call(command, shell=True)
     shutil.move(file_name, os.path.dirname(folder_path))
     os.chdir(_cwd)
+    queue_.put(os.path.join(os.path.dirname(folder_path), file_name))
     return os.path.join(os.path.dirname(folder_path), file_name)
 
 
@@ -69,8 +71,12 @@ def cli_run(video_path, srt_path=None):
 
 def invoke_run(video_path, srt_path=None, delete_assembly_folder=True, lock_=threading.Lock()):
     output_dir = cut_video(video_path, srt_path, if_print=False)
+    queue = Queue()
     with lock_:
-        result_file_path = concat_video(output_dir, simple_postfix=True, if_print=False)
+        t = threading.Thread(target=concat_video, args=[output_dir], kwargs={'simple_postfix': True, 'if_print': False, 'queue_': queue})
+        t.start()
+        t.join()
+        result_file_path = queue.get(block=False)
     if delete_assembly_folder:
         shutil.rmtree(output_dir)
     return result_file_path
