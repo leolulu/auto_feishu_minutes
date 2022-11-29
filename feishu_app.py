@@ -2,7 +2,6 @@ import logging
 import os
 import shutil
 import sys
-import threading
 import time
 import types
 from typing import List
@@ -19,10 +18,9 @@ from urllib3.connectionpool import log as urllibLogger
 from utils.chrome_controller import UserDirDispatcher
 from utils.download_util import get_download_path
 from utils.load_xpath import *
+from utils.locks import global_lock, upload_select_lock
 from utils.upload_util import Uploader, upload_file_pyauto
 from utils.webdriver_util import wait_element_clickable, wait_element_presence, wait_element_visible
-
-upload_select_lock = threading.Lock()
 
 
 class VideoInfo:
@@ -120,7 +118,8 @@ class FeishuApp:
         time.sleep(120)
 
     def open_main_page(self):
-        self._open_browser()
+        with global_lock:
+            self._open_browser()
         self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
         self.edge_browser.maximize_window()
         try:

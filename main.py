@@ -2,7 +2,6 @@ import argparse
 import collections
 import os
 import shutil
-import threading
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
@@ -12,9 +11,8 @@ from typing import List
 from cut_dense_video import invoke_run
 from feishu_app import FeishuApp
 from utils.chrome_controller import UserDirDispatcher
+from utils.locks import global_lock
 from utils.read_srt import if_srt_empty
-
-concat_lock = threading.Lock()
 
 
 class PostUploader:
@@ -50,7 +48,7 @@ class PostUploader:
                 print("字幕内容为空，后处理到此为止...")
                 self.all_finish = True
                 return
-            self.video_path = invoke_run(self.video_path, srt_path, delete_assembly_folder=False, lock_=concat_lock)
+            self.video_path = invoke_run(self.video_path, srt_path, delete_assembly_folder=False, lock_=global_lock)
             self.app = FeishuApp(
                 self.video_path,
                 self.user_dir_dispatcher,
