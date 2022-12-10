@@ -1,6 +1,7 @@
 import argparse
 import collections
 import os
+import re
 import shutil
 import time
 import traceback
@@ -71,6 +72,21 @@ class FileWatcher:
         self.await_delay_process = False
         self.app = FeishuApp(self.file_path, user_dir_dispatcher)
         self.post_uploader: PostUploader = None  # type: ignore
+        self._get_file_level_target()
+
+    def _get_file_level_target(self):
+        file_name = os.path.splitext(os.path.basename(self.file_path))[0]
+        level_obj = re.findall(r"__l(\d)$", file_name)
+        if level_obj:
+            self.file_level_target = int(level_obj[0])
+        else:
+            self.file_level_target = None
+
+    def get_file_level_target(self, default: int) -> int:
+        if self.file_level_target:
+            return self.file_level_target
+        else:
+            return default
 
     def _get_latest_size(self):
         self.size_info.append(os.path.getsize(self.file_path))
@@ -180,6 +196,9 @@ class FileScanner:
                 self.append_file_list(file_path)
 
     def multi_post_upload(self, finish_file_path, level_target, file: FileWatcher):
+        if level_target <= 1:
+            print(f"当前level_target为【{level_target}】，无需进入后处理环节")
+            return True
         print("进入后处理上传环节...")
         if file.post_uploader is None:
             file.post_uploader = PostUploader(finish_file_path, level_target, self.user_dir_dispatcher)
@@ -196,7 +215,7 @@ class FileScanner:
                 file.institute_feishu_process(self.switch_after_noumenon_uploaded)
                 finish_file_path = self.add_finish_mark(file.file_path)
                 self.add_finish_mark(file.srt_path)
-                self.multi_post_upload(finish_file_path, self.level_target, file)  # type: ignore
+                self.multi_post_upload(finish_file_path, file.get_file_level_target(self.level_target), file)  # type: ignore
                 self.submitted_files.remove(file)
                 print("异步任务已完成...")
             except Exception as e:
@@ -222,7 +241,7 @@ class FileScanner:
                         continue
                     finish_file_path = self.add_finish_mark(file.file_path)
                     self.add_finish_mark(file.srt_path)
-                post_upload_finish = self.multi_post_upload(finish_file_path, self.level_target, file)  # type: ignore
+                post_upload_finish = self.multi_post_upload(finish_file_path, file.get_file_level_target(self.level_target), file)  # type: ignore
                 if self.switch_between_post_uploads and (not post_upload_finish):
                     continue
                 self.files.remove(file)
