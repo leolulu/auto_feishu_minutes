@@ -83,7 +83,7 @@ class FileWatcher:
             self.file_level_target = None
 
     def get_file_level_target(self, default: int) -> int:
-        if self.file_level_target:
+        if isinstance(self.file_level_target, int):
             return self.file_level_target
         else:
             return default
@@ -215,7 +215,7 @@ class FileScanner:
                 file.institute_feishu_process(self.switch_after_noumenon_uploaded)
                 finish_file_path = self.add_finish_mark(file.file_path)
                 self.add_finish_mark(file.srt_path)
-                self.multi_post_upload(finish_file_path, file.get_file_level_target(self.level_target), file)  # type: ignore
+                self.multi_post_upload(finish_file_path, file.get_file_level_target(self.level_target), file)
                 self.submitted_files.remove(file)
                 print("异步任务已完成...")
             except Exception as e:
