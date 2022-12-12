@@ -197,7 +197,7 @@ class FileScanner:
 
     def multi_post_upload(self, finish_file_path, level_target, file: FileWatcher):
         if level_target <= 1:
-            print(f"当前level_target为【{level_target}】，无需进入后处理环节")
+            print(f"此文件level_target为【{level_target}】，无需进入后处理环节")
             return True
         print("进入后处理上传环节...")
         if file.post_uploader is None:
