@@ -198,6 +198,10 @@ class FileScanner:
                 if ext.lower() in FileScanner.SUPPORTED_FORMAT:
                     self.append_file_list(file_path)
                 if ext.lower() in FileScanner.REMUX_FORMAT:
+                    try:
+                        os.rename(file_path, file_path)
+                    except PermissionError:
+                        continue
                     print(f"重封装文件：{file_path}")
                     mux_video(file_path)
 
