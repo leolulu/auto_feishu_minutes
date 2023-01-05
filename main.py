@@ -12,6 +12,7 @@ from typing import List
 from cut_dense_video import invoke_run
 from feishu_app import FeishuApp
 from utils.chrome_controller import UserDirDispatcher
+from utils.common_util import mux_video
 from utils.locks import global_lock
 from utils.read_srt import if_srt_empty
 
@@ -136,8 +137,9 @@ class FileWatcher:
 
 class FileScanner:
     POSTFIX = "_srted"
-    NOT_PROCESS_POSTFIX = [POSTFIX, "_cut_dense", "_ccd"]
+    NOT_PROCESS_POSTFIX = [POSTFIX, "_cut_dense", "_ccd", "_remuxed"]
     SUPPORTED_FORMAT = ['.mp4', '.avi', '.wmv', '.mov', '.m4v', '.mpeg', 'ogg', '.3gp', '.flv']
+    REMUX_FORMAT = ['.mkv']
 
     def __init__(
         self,
@@ -192,8 +194,11 @@ class FileScanner:
         for file in files:
             (name, ext) = os.path.splitext(file)
             file_path = os.path.join(self.data_dir, file)
-            if ext.lower() in FileScanner.SUPPORTED_FORMAT and (self._postfix_check(name)):
-                self.append_file_list(file_path)
+            if self._postfix_check(name):
+                if ext.lower() in FileScanner.SUPPORTED_FORMAT:
+                    self.append_file_list(file_path)
+                if ext.lower() in FileScanner.REMUX_FORMAT:
+                    mux_video(file_path)
 
     def multi_post_upload(self, finish_file_path, level_target, file: FileWatcher):
         if level_target <= 1:
