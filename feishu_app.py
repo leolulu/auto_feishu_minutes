@@ -16,7 +16,7 @@ from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
 from urllib3.connectionpool import log as urllibLogger
 
 from utils.chrome_controller import UserDirDispatcher
-from utils.download_util import get_download_path
+from utils.common_util import get_download_path
 from utils.load_xpath import *
 from utils.locks import global_lock, upload_select_lock
 from utils.upload_util import Uploader, upload_file_pyauto
