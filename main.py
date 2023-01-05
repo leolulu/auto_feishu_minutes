@@ -198,6 +198,7 @@ class FileScanner:
                 if ext.lower() in FileScanner.SUPPORTED_FORMAT:
                     self.append_file_list(file_path)
                 if ext.lower() in FileScanner.REMUX_FORMAT:
+                    print(f"重封装文件：{file_path}")
                     mux_video(file_path)
 
     def multi_post_upload(self, finish_file_path, level_target, file: FileWatcher):
