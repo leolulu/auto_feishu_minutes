@@ -10,10 +10,10 @@ def get_download_path():
 def mux_video(file_path):
     def get_command(if_copy):
         if if_copy:
-            copy_component = "-c copy -map_chapters"
+            copy_component = "-c copy -map_chapters -1"
         else:
             copy_component = ""
-        return f'ffmpeg  -i "{file_path}" {copy_component} -1 -y "{output_file_path}" 2>>"{remux_log}"'
+        return f'ffmpeg  -i "{file_path}" {copy_component} -y "{output_file_path}" 2>>"{remux_log}"'
 
     output_file_path = os.path.splitext(file_path)[0] + '.mp4'
     remux_log = os.path.splitext(file_path)[0] + '_remux.log'
