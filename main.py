@@ -139,7 +139,7 @@ class FileScanner:
     POSTFIX = "_srted"
     NOT_PROCESS_POSTFIX = [POSTFIX, "_cut_dense", "_ccd", "_remuxed"]
     SUPPORTED_FORMAT = ['.mp4', '.avi', '.wmv', '.mov', '.m4v', '.mpeg', 'ogg', '.3gp', '.flv']
-    REMUX_FORMAT = ['.mkv']
+    REMUX_FORMAT = ['.mkv', '.webm']
 
     def __init__(
         self,
