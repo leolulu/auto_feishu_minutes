@@ -131,6 +131,7 @@ class FeishuApp:
 
     def upload_file(self):
         if_open_upload_menu_success = False
+        retry_times = 60
         while not if_open_upload_menu_success:
             try:
                 actions = ActionChains(self.edge_browser)
@@ -148,6 +149,9 @@ class FeishuApp:
             except Exception as e:
                 print(e)
                 time.sleep(1)
+                retry_times -= 1
+                if retry_times <= 0:
+                    raise UserWarning("打开上传弹出框多次尝试失败！")
         uploader = Uploader("打开")
         uploader.wait_present()
         upload_file_pyauto(self.file_dir, self.file_name, uploader.win)
