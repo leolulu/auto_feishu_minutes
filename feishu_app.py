@@ -249,6 +249,8 @@ class FeishuApp:
                 self.upload_file()
             self.check_upload_status()
             if level0_process:
+                self.edge_browser.quit()
+                time.sleep(1)
                 return
         if delay_process:
             self.edge_browser.quit()
