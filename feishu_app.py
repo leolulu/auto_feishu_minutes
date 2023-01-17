@@ -241,12 +241,14 @@ class FeishuApp:
         time.sleep(2)
         self.video_deleted = True
 
-    def dispatch(self, delay_process):
+    def dispatch(self, delay_process, level0_process):
         self.open_main_page()
         if not self.video_uploaded:
             with upload_select_lock:
                 self.upload_file()
             self.check_upload_status()
+            if level0_process:
+                return
         if delay_process:
             self.edge_browser.quit()
             time.sleep(1)
@@ -262,11 +264,11 @@ class FeishuApp:
         self.edge_browser.quit()
         time.sleep(1)
 
-    def run(self, delay_process=False):
+    def run(self, delay_process=False, level0_process=False):
         task_success = False
         while not task_success:
             try:
-                self.dispatch(delay_process)
+                self.dispatch(delay_process, level0_process)
                 task_success = True
             except Exception as e:
                 self.edge_browser.quit()

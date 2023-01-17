@@ -89,6 +89,13 @@ class FileWatcher:
         else:
             return default
 
+    @property
+    def _if_level0(self):
+        if isinstance(self.file_level_target, int) and self.file_level_target <= 1:
+            return True
+        else:
+            return False
+
     def _get_latest_size(self):
         self.size_info.append(os.path.getsize(self.file_path))
 
@@ -123,14 +130,14 @@ class FileWatcher:
             raise UserWarning(f"{self.file_path}不存在，终止任务！！！")
         if switch_after_noumenon_uploaded and (not self.await_delay_process):
             print(f"大小稳定了，启动新飞书任务：{self.file_path}")
-            self.app.run(delay_process=True)
+            self.app.run(delay_process=True, level0_process=self._if_level0)
             self.await_delay_process = True
         else:
             if switch_after_noumenon_uploaded:
                 print(f"获取首次上传的字幕：{self.file_path}")
             else:
                 print(f"大小稳定了，启动新飞书任务：{self.file_path}")
-            self.app.run()
+            self.app.run(level0_process=self._if_level0)
             self.await_delay_process = False
             self.srt_path = self.app.srt_path
             print("飞书任务处理完毕...")
@@ -173,7 +180,8 @@ class FileScanner:
         return FileScanner.POSTFIX.join(os.path.splitext(file_path))
 
     def add_finish_mark(self, file_path):
-        return shutil.move(file_path, self._renamed_name(file_path))
+        if os.path.exists(str(file_path)):
+            return shutil.move(file_path, self._renamed_name(file_path))
 
     def _postfix_check(self, name: str):
         pass_ = True
