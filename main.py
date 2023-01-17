@@ -180,7 +180,7 @@ class FileScanner:
         return FileScanner.POSTFIX.join(os.path.splitext(file_path))
 
     def add_finish_mark(self, file_path):
-        if os.path.exists(str(file_path)):
+        if os.path.exists(file_path):
             return shutil.move(file_path, self._renamed_name(file_path))
 
     def _postfix_check(self, name: str):
@@ -240,6 +240,7 @@ class FileScanner:
             except Exception as e:
                 print("异步任务出问题了！！！！！需要检查！")
                 print(e)
+                traceback.print_exc()
                 with open('error.log', 'a', encoding='utf-8') as f:
                     f.write("{}\n{}\n{}\n\n\n".format(file.file_path, str(e), traceback.format_exc()))
 

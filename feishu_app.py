@@ -60,6 +60,7 @@ class FeishuApp:
         self.load_user_password()
         self._init_process_status()
         self.fail_times = 0
+        self.srt_path = ""
 
     def _init_process_status(self):
         self.video_uploaded = False
