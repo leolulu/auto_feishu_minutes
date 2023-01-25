@@ -8,7 +8,7 @@ def _compute_end_time(start_delta: datetime.timedelta, end_delta: datetime.timed
     if (
         isinstance(max_delta_second, int)
         and ((end_delta.seconds-start_delta.seconds) > max_delta_second)
-        and re.search(r".*oh|ああ|うん.*", content.lower())
+        and re.search(r".*oh|ああ|うん|啊啊.*", content.lower())
     ):
         return srt.timedelta_to_srt_timestamp(
             start_delta + datetime.timedelta(seconds=max_delta_second)
