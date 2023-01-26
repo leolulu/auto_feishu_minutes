@@ -14,7 +14,7 @@ from feishu_app import FeishuApp
 from utils.chrome_controller import UserDirDispatcher
 from utils.common_util import mux_video
 from utils.locks import global_lock
-from utils.read_srt import if_srt_empty
+from utils.sub_util import if_srt_empty
 
 
 class PostUploader:

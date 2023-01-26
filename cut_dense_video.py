@@ -7,7 +7,7 @@ from queue import Queue
 
 from tqdm import tqdm
 
-from utils.read_srt import read_srt
+from utils.sub_util import read_srt
 
 
 def concat_video(folder_path, simple_postfix=False, if_print=True, queue_=Queue()):

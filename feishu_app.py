@@ -10,6 +10,7 @@ from lxml import etree
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotInteractableException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
@@ -19,6 +20,7 @@ from utils.chrome_controller import UserDirDispatcher
 from utils.common_util import get_download_path
 from utils.load_xpath import *
 from utils.locks import global_lock, upload_select_lock
+from utils.sub_util import gen_custom_srt
 from utils.upload_util import Uploader, upload_file_pyauto
 from utils.webdriver_util import wait_element_clickable, wait_element_presence, wait_element_visible
 
@@ -211,6 +213,17 @@ class FeishuApp:
         self.edge_browser.wait_element_clickable(xpath_format_selector).click()  # type: ignore
         self.edge_browser.wait_element_clickable(xpath_srt_option).click()  # type: ignore
         self.edge_browser.wait_element_clickable(xpath_button_export).click()  # type: ignore
+        self.word_level_sub_info = self._get_word_level_sub()
+
+    def _get_word_level_sub(self):
+        word_elements = self.edge_browser.find_elements(By.XPATH, "//div[@class='p-contents']//span[contains(@class,'word')]")
+        word_level_subs = []
+        for element in word_elements:
+            time_offset = element.get_attribute("time-offset")
+            offset_begin, offset_end = map(int, time_offset.split("-"))
+            text = element.text.strip()
+            word_level_subs.append([offset_begin, offset_end, text])
+        return word_level_subs
 
     def move_srt_file(self):
         if_find_it = False
@@ -221,6 +234,12 @@ class FeishuApp:
                 (name, ext) = os.path.splitext(os.path.basename(scan_file))
                 if name == os.path.splitext(self.file_name)[0] and ext == '.srt':
                     if_find_it = True
+                    if self.word_level_sub_info:
+                        print("存在word级别字幕，替换飞书妙记原生字幕...")
+                        with open(scan_file, 'w', encoding='utf-8') as f:
+                            f.write(gen_custom_srt(self.word_level_sub_info))
+                    else:
+                        print("未检测到word级别字幕，使用已下载原生字幕...")
                     self.srt_path = os.path.abspath(shutil.move(scan_file, self.file_dir))
                     break
                 else:

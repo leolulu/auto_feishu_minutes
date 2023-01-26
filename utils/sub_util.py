@@ -4,11 +4,33 @@ import re
 import srt
 
 
+def gen_custom_srt(word_level_sub_info):
+    def int2str(offset):
+        second = int(offset / 1000)
+        milli_sec = (offset/1000 - second) * 1000
+        delta = datetime.timedelta(seconds=second, milliseconds=milli_sec)
+        return srt.timedelta_to_srt_timestamp(delta).replace(",", ".")
+
+    srt_text = ""
+    for idx, row in enumerate(word_level_sub_info):
+        srt_section = ""
+        offset_begin, offset_end, text = row
+        offset_begin = int2str(offset_begin)
+        offset_end = int2str(offset_end)
+        srt_section = "\n{}\n{}\n{}\n".format(
+            idx+1,
+            "{} --> {}".format(offset_begin, offset_end),
+            text
+        )
+        srt_text += srt_section
+    return srt_text
+
+
 def _compute_end_time(start_delta: datetime.timedelta, end_delta: datetime.timedelta, content: str, max_delta_second):
     if (
         isinstance(max_delta_second, int)
         and ((end_delta.seconds-start_delta.seconds) > max_delta_second)
-        and re.search(r".*oh|ああ|うん|啊啊.*", content.lower())
+        and re.search(r".*oh|ah|ha|huh|mm|ああ|あー|あっ|うん|啊啊|哼哼.*", content.lower())
     ):
         return srt.timedelta_to_srt_timestamp(
             start_delta + datetime.timedelta(seconds=max_delta_second)
