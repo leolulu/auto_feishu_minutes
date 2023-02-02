@@ -37,7 +37,7 @@ def concat_video(folder_path, simple_postfix=False, if_print=True, queue_=Queue(
     return os.path.join(os.path.dirname(folder_path), file_name)
 
 
-def cut_video(video_path, srt_path, if_print=True):
+def cut_video(video_path, srt_path, if_print=True, max_delta_second=1):
     video_path = os.path.abspath(video_path)
     video_name = os.path.basename(video_path)
     output_dir = os.path.join(os.path.dirname(video_path), os.path.splitext(video_name)[0]+'_concat')
@@ -45,7 +45,7 @@ def cut_video(video_path, srt_path, if_print=True):
         os.mkdir(output_dir)
     if srt_path is None:
         srt_path = os.path.splitext(video_path)[0] + '.srt'
-    srt_datas = read_srt(srt_path, max_delta_second=1)
+    srt_datas = read_srt(srt_path, max_delta_second)
     for idx, srt_data in enumerate(tqdm(srt_datas)):
         start_time, end_time, content = srt_data
         output_video_path = os.path.join(
@@ -65,7 +65,7 @@ def cut_video(video_path, srt_path, if_print=True):
 
 
 def cli_run(video_path, srt_path=None):
-    output_dir = cut_video(video_path, srt_path)
+    output_dir = cut_video(video_path, srt_path, max_delta_second=None)  # type: ignore
     concat_video(output_dir)
 
 
