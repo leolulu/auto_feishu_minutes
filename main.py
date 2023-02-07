@@ -65,15 +65,34 @@ class PostUploader:
 
 
 class FileWatcher:
+    ILLEGAL_CHAR = ['~']
+
     def __init__(self, file_path, user_dir_dispatcher: UserDirDispatcher) -> None:
         print(f"新增文件进入监视中：{file_path}")
         self.queue_size = 3
         self.file_path = file_path
+        self.user_dir_dispatcher = user_dir_dispatcher
         self.size_info = collections.deque(maxlen=self.queue_size)
         self.await_delay_process = False
-        self.app = FeishuApp(self.file_path, user_dir_dispatcher)
         self.post_uploader: PostUploader = None  # type: ignore
         self._get_file_level_target()
+        self.illegal_char_checked = False
+
+    def _illegal_char_check(self):
+        file = os.path.basename(self.file_path)
+        file_dir = os.path.dirname(self.file_path)
+        if_replaced = False
+        for char_ in FileWatcher.ILLEGAL_CHAR:
+            if char_ in file:
+                file_replaced = file.replace(char_, "")
+                print(f"文件名中存在非法字符【{char_}】，进行替换：[{file}] → [{file_replaced}]")
+                file = file_replaced
+                if_replaced = True
+        if if_replaced:
+            file_path_replaced = os.path.join(file_dir, file)
+            os.rename(self.file_path, file_path_replaced)
+            self.file_path = file_path_replaced
+        self.illegal_char_checked = True
 
     def _get_file_level_target(self):
         file_name = os.path.splitext(os.path.basename(self.file_path))[0]
@@ -128,6 +147,9 @@ class FileWatcher:
     def institute_feishu_process(self, switch_after_noumenon_uploaded):
         if not os.path.exists(self.file_path):
             raise UserWarning(f"{self.file_path}不存在，终止任务！！！")
+        if not self.illegal_char_checked:
+            self._illegal_char_check()
+        self.app = FeishuApp(self.file_path, self.user_dir_dispatcher)
         if switch_after_noumenon_uploaded and (not self.await_delay_process):
             print(f"大小稳定了，启动新飞书任务：{self.file_path}")
             self.app.run(delay_process=True, level0_process=self._if_level0)
