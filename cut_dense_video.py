@@ -1,7 +1,7 @@
+import argparse
 import os
 import shutil
 import subprocess
-import sys
 import threading
 from queue import Queue
 
@@ -37,7 +37,7 @@ def concat_video(folder_path, simple_postfix=False, if_print=True, queue_=Queue(
     return os.path.join(os.path.dirname(folder_path), file_name)
 
 
-def cut_video(video_path, srt_path, if_print=True, max_delta_second=1):
+def cut_video(video_path, srt_path, if_print=True, max_delta_second=1, max_all_second=None):
     video_path = os.path.abspath(video_path)
     video_name = os.path.basename(video_path)
     output_dir = os.path.join(os.path.dirname(video_path), os.path.splitext(video_name)[0]+'_concat')
@@ -45,7 +45,7 @@ def cut_video(video_path, srt_path, if_print=True, max_delta_second=1):
         os.mkdir(output_dir)
     if srt_path is None:
         srt_path = os.path.splitext(video_path)[0] + '.srt'
-    srt_datas = read_srt(srt_path, max_delta_second)
+    srt_datas = read_srt(srt_path, max_delta_second, max_all_second)
     for idx, srt_data in enumerate(tqdm(srt_datas)):
         start_time, end_time, content = srt_data
         output_video_path = os.path.join(
@@ -64,8 +64,12 @@ def cut_video(video_path, srt_path, if_print=True, max_delta_second=1):
     return output_dir
 
 
-def cli_run(video_path, srt_path=None):
-    output_dir = cut_video(video_path, srt_path, max_delta_second=None)  # type: ignore
+def cli_run(args):
+    video_path = args.video_path
+    srt_path = args.srt_path
+    max_delta_second = args.max_delta_second
+    max_all_second = args.max_all_second
+    output_dir = cut_video(video_path, srt_path, max_delta_second=max_delta_second, max_all_second=max_all_second)
     concat_video(output_dir)
 
 
@@ -84,7 +88,10 @@ def invoke_run(video_path, srt_path=None, delete_assembly_folder=True, lock_=thr
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        cli_run(sys.argv[1])
-    elif len(sys.argv) == 3:
-        cli_run(sys.argv[1], sys.argv[2])
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('video_path', help='视频文件的路径')
+    parser.add_argument('-s', '--srt_path', help='字幕文件的路径，如果不提供，则为视频文件路径后缀名改为srt')
+    parser.add_argument('--max_delta_second', help='如果指定，则字幕中如存在特定字符，将限制单句时长为此秒', type=int)
+    parser.add_argument('--max_all_second', help='如果指定，将限制字幕所有单句时长为此秒，此选项优先级大于max_delta_second', type=int)
+    args = parser.parse_args()
+    cli_run(args)
