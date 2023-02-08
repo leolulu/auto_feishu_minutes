@@ -79,6 +79,7 @@ def invoke_run(video_path, srt_path=None, delete_assembly_folder=True, lock_=thr
         result_file_path = queue.get(block=False)
     if delete_assembly_folder:
         shutil.rmtree(output_dir)
+    print(f"视频合并完毕，开始上传...")
     return result_file_path
 
 
