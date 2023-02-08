@@ -52,6 +52,8 @@ def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, 
     srt_datas = read_srt(srt_path, max_onomatopoeic_second, max_all_second)
     for idx, srt_data in enumerate(tqdm(srt_datas)):
         start_time, end_time, content = srt_data
+        with open(os.path.join(output_dir, "srt_info.log"), 'a', encoding='utf-8') as f:
+            f.write(f"{start_time}\n{end_time}\n{content}\n\n")
         output_video_path = os.path.join(
             output_dir,
             "".join([
