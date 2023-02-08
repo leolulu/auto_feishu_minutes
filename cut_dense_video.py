@@ -20,7 +20,7 @@ def concat_video(folder_path, simple_postfix=False, if_print=True, queue_=Queue(
         os.remove('filelist.txt')
     with open('filelist.txt', 'a', encoding='utf-8') as f:
         for i in os.listdir('.'):
-            if i in ['filelist.txt', 'cut_video.log']:
+            if i in ['filelist.txt', 'cut_video.log', 'srt_info.log']:
                 continue
             f.write(f"file '{i}'\n")
     file_name = f"{os.path.basename(folder_path)}_cut_dense.mp4"
