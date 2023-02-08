@@ -37,7 +37,7 @@ def _compute_end_time(start_delta: datetime.timedelta, end_delta: datetime.timed
     elif (
         isinstance(max_onomatopoeic_second, int)
         and ((end_delta.seconds-start_delta.seconds) > max_onomatopoeic_second)
-        and re.search(r".*oh|ah|ha|huh|mm|ああ|あー|あっ|うん|啊啊|哼哼.*", content.lower())
+        and re.search(r".*oh|ah|ha|uh|mm|ああ|あー|あっ|うん|啊啊|哼哼.*", content.lower())
     ):
         return srt.timedelta_to_srt_timestamp(
             start_delta + datetime.timedelta(seconds=max_onomatopoeic_second)
