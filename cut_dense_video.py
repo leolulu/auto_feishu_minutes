@@ -44,7 +44,11 @@ def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1, ma
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
     if srt_path is None:
-        srt_path = os.path.splitext(video_path)[0] + '.srt'
+        srt_path_obj = os.path.splitext(video_path)[0] + '.srt'
+        if os.path.exists(srt_path_obj):
+            srt_path = srt_path_obj
+        else:
+            srt_path = video_path + '.srt'
     srt_datas = read_srt(srt_path, max_onomatopoeic_second, max_all_second)
     for idx, srt_data in enumerate(tqdm(srt_datas)):
         start_time, end_time, content = srt_data
