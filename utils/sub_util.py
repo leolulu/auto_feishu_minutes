@@ -28,14 +28,14 @@ def gen_custom_srt(word_level_sub_info):
 
 def _compute_end_time(start_delta: datetime.timedelta, end_delta: datetime.timedelta, content: str, max_onomatopoeic_second, max_all_second):
     if (
-        isinstance(max_all_second, int)
+        isinstance(max_all_second, float)
         and ((end_delta.seconds-start_delta.seconds) > max_all_second)
     ):
         return srt.timedelta_to_srt_timestamp(
             start_delta + datetime.timedelta(seconds=max_all_second)
         )
     elif (
-        isinstance(max_onomatopoeic_second, int)
+        isinstance(max_onomatopoeic_second, float)
         and ((end_delta.seconds-start_delta.seconds) > max_onomatopoeic_second)
         and re.search(r".*oh|ah|ha|hmm|uh|mm|ああ|あー|あっ|うん|啊啊|哼哼.*", content.lower())
     ):
