@@ -55,7 +55,8 @@ def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, 
         start_time, end_time, content = srt_data
         with open(os.path.join(output_dir, "srt_info.log"), 'a', encoding='utf-8') as f:
             def strptime(x): return datetime.strptime(x, r"%H:%M:%S.%f")
-            seconds = (strptime(end_time) - strptime(start_time)).microseconds / 1000 / 1000
+            delta = strptime(end_time) - strptime(start_time)
+            seconds = delta.seconds + delta.microseconds / 1000 / 1000
             if (
                 ((max_onomatopoeic_second is not None) and (seconds > max_onomatopoeic_second))
                 or ((max_all_second is not None) and (seconds > max_all_second))
