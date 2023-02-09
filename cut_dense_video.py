@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import threading
 from queue import Queue
+from datetime import datetime
 
 from tqdm import tqdm
 
@@ -53,7 +54,14 @@ def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, 
     for idx, srt_data in enumerate(tqdm(srt_datas)):
         start_time, end_time, content = srt_data
         with open(os.path.join(output_dir, "srt_info.log"), 'a', encoding='utf-8') as f:
-            f.write(f"{start_time}\n{end_time}\n{content}\n\n")
+            def strptime(x): return datetime.strptime(x, r"%H:%M:%S.%f")
+            seconds = (strptime(end_time) - strptime(start_time)).microseconds / 1000 / 1000
+            if (
+                ((max_onomatopoeic_second is not None) and (seconds > max_onomatopoeic_second))
+                or ((max_all_second is not None) and (seconds > max_all_second))
+            ):
+                seconds = f"【【{seconds}】】"
+            f.write(f"{start_time}\n{end_time}\n{seconds}\n{content}\n\n")
         output_video_path = os.path.join(
             output_dir,
             "".join([
