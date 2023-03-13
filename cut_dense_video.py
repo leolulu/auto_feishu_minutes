@@ -76,7 +76,7 @@ def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, 
             ])
         )
         log_path = os.path.abspath(os.path.join(output_dir, "cut_video.log"))
-        command = f'ffmpeg -y -ss {start_time} -to {end_time} -i "{video_path}" -preset veryfast "{output_video_path}" 2>>"{log_path}"'
+        command = f'ffmpeg -y -ss {start_time} -to {end_time} -i "{video_path}" -preset veryfast -map_chapters -1 "{output_video_path}" 2>>"{log_path}"'
         if if_print:
             print(f"\n{command}")
         subprocess.call(command, shell=True)
