@@ -261,8 +261,25 @@ class FeishuApp:
         time.sleep(2)
         self.video_deleted = True
 
+    def empty_recycle_bin(self):
+        try:
+            self.edge_browser.get("https://rbqqmtbi35.feishu.cn/minutes/trash")
+            actions = ActionChains(self.edge_browser)
+            actions.move_to_element(self.edge_browser.find_element('xpath', xpath_delete_checkbox_header))
+            actions.click(self.edge_browser.find_element('xpath', xpath_delete_select_all))
+            self.edge_browser.find_element('xpath', xpath_permanent_delete_button)
+            for _ in range(10):
+                try:
+                    self.edge_browser.find_element('xpath', xpath_confirm_permanent_delete_button)
+                    break
+                except:
+                    time.sleep(1)
+        except Exception as e:
+            print(f"清空回收站失败：{e}")
+
     def dispatch(self, delay_process, level0_process):
         self.open_main_page()
+        self.empty_recycle_bin()
         if not self.video_uploaded:
             with upload_select_lock:
                 self.upload_file()

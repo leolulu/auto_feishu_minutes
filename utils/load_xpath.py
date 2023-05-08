@@ -34,3 +34,9 @@ xpath_delete_miaoji = "//div[text()='删除']"
 xpath_detail_option = "//div[@class='detail-meeting-menu-btn']"
 xpath_button_export = "//button[text()='导出']"
 xpath_button_delete = "//button[text()='删除']"
+
+# 删除相关
+xpath_delete_checkbox_header = "//div[@class='list-table-head']"
+xpath_delete_select_all = "//div[@class='list-table-head']//input[@class='ud__checkbox__input']"
+xpath_permanent_delete_button = "//div[@class='meeting-list-delete']//button[text()='永久删除']"
+xpath_confirm_permanent_delete_button = "//div[@class='ud__modal__footer']//button[text()='永久删除']"
