@@ -15,6 +15,7 @@ from selenium.webdriver.edge.options import Options
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
 from urllib3.connectionpool import log as urllibLogger
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 from utils.chrome_controller import UserDirDispatcher
 from utils.common_util import get_download_path
@@ -80,7 +81,7 @@ class FeishuApp:
             )
         ))
         self.edge_browser = webdriver.Edge(
-            service=Service("driver/msedgedriver.exe"),
+            service=Service(EdgeChromiumDriverManager().install()),
             options=edge_options
         )
         self._enrich_browser()
