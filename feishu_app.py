@@ -279,6 +279,7 @@ class FeishuApp:
                     time.sleep(1)
         except Exception as e:
             print(f"清空回收站失败：{e}")
+        self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
 
     def dispatch(self, delay_process, level0_process):
         self.open_main_page()
