@@ -268,10 +268,12 @@ class FeishuApp:
             actions = ActionChains(self.edge_browser)
             actions.move_to_element(self.edge_browser.find_element('xpath', xpath_delete_checkbox_header))
             actions.click(self.edge_browser.find_element('xpath', xpath_delete_select_all))
-            self.edge_browser.find_element('xpath', xpath_permanent_delete_button)
+            actions.perform()
+            time.sleep(0.5)
+            self.edge_browser.find_element('xpath', xpath_permanent_delete_button).click()
             for _ in range(10):
                 try:
-                    self.edge_browser.find_element('xpath', xpath_confirm_permanent_delete_button)
+                    self.edge_browser.find_element('xpath', xpath_confirm_permanent_delete_button).click()
                     break
                 except:
                     time.sleep(1)
