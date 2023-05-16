@@ -7,6 +7,7 @@ import types
 from typing import List
 
 from lxml import etree
+from retrying import retry
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotInteractableException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
@@ -70,6 +71,10 @@ class FeishuApp:
         self.sub_downloaded = False
         self.video_deleted = False
 
+    @retry(wait_fixed=2000)
+    def _get_driver(self):
+        return EdgeChromiumDriverManager().install()
+
     def _open_browser(self):
         self.user_dir = self.user_dir_dispatcher.get_an_idle_dir()
         edge_options = Options()
@@ -81,7 +86,7 @@ class FeishuApp:
             )
         ))
         self.edge_browser = webdriver.Edge(
-            service=Service(EdgeChromiumDriverManager().install()),
+            service=Service(self._get_driver()),
             options=edge_options
         )
         self._enrich_browser()
