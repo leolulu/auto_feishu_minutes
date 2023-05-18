@@ -269,21 +269,29 @@ class FeishuApp:
 
     def empty_recycle_bin(self):
         try:
-            self.edge_browser.get("https://rbqqmtbi35.feishu.cn/minutes/trash")
-            actions = ActionChains(self.edge_browser)
-            actions.move_to_element(self.edge_browser.find_element('xpath', xpath_delete_checkbox_header))
-            actions.click(self.edge_browser.find_element('xpath', xpath_delete_select_all))
-            actions.perform()
-            time.sleep(0.5)
-            self.edge_browser.find_element('xpath', xpath_permanent_delete_button).click()
-            for _ in range(10):
-                try:
-                    self.edge_browser.find_element('xpath', xpath_confirm_permanent_delete_button).click()
-                    break
-                except:
-                    time.sleep(1)
-        except Exception as e:
-            print(f"清空回收站失败：{e}")
+            self.edge_browser.find_element('xpath', xpath_delete_checkbox_header)
+            if_header_found = True
+        except:
+            if_header_found = False
+        if if_header_found:
+            try:
+                self.edge_browser.get("https://rbqqmtbi35.feishu.cn/minutes/trash")
+                actions = ActionChains(self.edge_browser)
+                actions.move_to_element(self.edge_browser.find_element('xpath', xpath_delete_checkbox_header))
+                actions.click(self.edge_browser.find_element('xpath', xpath_delete_select_all))
+                actions.perform()
+                time.sleep(0.5)
+                self.edge_browser.find_element('xpath', xpath_permanent_delete_button).click()
+                for _ in range(10):
+                    try:
+                        self.edge_browser.find_element('xpath', xpath_confirm_permanent_delete_button).click()
+                        break
+                    except:
+                        time.sleep(1)
+            except Exception as e:
+                print(f"清空回收站失败：{e}")
+        else:
+            print(f"回收站没有内容，无需清空...")
         self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
 
     def dispatch(self, delay_process, level0_process):
