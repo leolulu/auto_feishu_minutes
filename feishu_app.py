@@ -268,14 +268,15 @@ class FeishuApp:
         self.video_deleted = True
 
     def empty_recycle_bin(self):
+        self.edge_browser.get("https://rbqqmtbi35.feishu.cn/minutes/trash")
         try:
             self.edge_browser.find_element('xpath', xpath_delete_checkbox_header)
             if_header_found = True
         except:
             if_header_found = False
+        print(f"回收站页是否有表头：{if_header_found}")
         if if_header_found:
             try:
-                self.edge_browser.get("https://rbqqmtbi35.feishu.cn/minutes/trash")
                 actions = ActionChains(self.edge_browser)
                 actions.move_to_element(self.edge_browser.find_element('xpath', xpath_delete_checkbox_header))
                 actions.click(self.edge_browser.find_element('xpath', xpath_delete_select_all))
