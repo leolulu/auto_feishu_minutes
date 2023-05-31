@@ -13,7 +13,6 @@ from cut_dense_video import invoke_run
 from feishu_app import FeishuApp
 from utils.chrome_controller import UserDirDispatcher
 from utils.common_util import mux_video
-from utils.locks import global_lock
 from utils.sub_util import if_srt_empty
 
 
@@ -50,7 +49,7 @@ class PostUploader:
                 print("字幕内容为空，后处理到此为止...")
                 self.all_finish = True
                 return
-            self.video_path = invoke_run(self.video_path, srt_path, delete_assembly_folder=False, lock_=global_lock)
+            self.video_path = invoke_run(self.video_path, srt_path, delete_assembly_folder=False)
             self.app = FeishuApp(
                 self.video_path,
                 self.user_dir_dispatcher,

@@ -2,8 +2,6 @@ import argparse
 import os
 import shutil
 import subprocess
-import threading
-from queue import Queue
 from datetime import datetime
 
 from tqdm import tqdm
@@ -11,31 +9,29 @@ from tqdm import tqdm
 from utils.sub_util import read_srt
 
 
-def concat_video(folder_path, simple_postfix=False, if_print=True, queue_=Queue()):
-    _cwd = os.getcwd()
-    os.chdir(folder_path)
+def concat_video(folder_path, simple_postfix=False, if_print=True, move_to_upper_folder=False):
     if if_print:
-        print(f"工作目录：{os.getcwd()}")
-
-    if os.path.exists('filelist.txt'):
-        os.remove('filelist.txt')
-    with open('filelist.txt', 'a', encoding='utf-8') as f:
-        for i in os.listdir('.'):
+        print(f"工作目录：{folder_path}")
+    filelist_path = os.path.join(folder_path, 'filelist.txt')
+    if os.path.exists(filelist_path):
+        os.remove(filelist_path)
+    with open(filelist_path, 'a', encoding='utf-8') as f:
+        for i in os.listdir(folder_path):
             if i in ['filelist.txt', 'cut_video.log', 'srt_info.log', 'srt_info_badcase.log']:
                 continue
+            i = os.path.join(folder_path, i).replace("'", r"'\''")
             f.write(f"file '{i}'\n")
-    file_name = f"{os.path.basename(folder_path)}_cut_dense.mp4"
+    file_path = os.path.join(folder_path, f"{os.path.basename(folder_path)}_cut_dense.mp4")
     if simple_postfix:
-        file_name = file_name.replace("_concat_cut_dense", "_ccd")
+        file_path = file_path.replace("_concat_cut_dense", "_ccd")
     log_path = os.path.abspath(os.path.join(folder_path, "concat_video.log"))
-    command = f'ffmpeg -f concat -safe 0 -i filelist.txt -c copy -y "{file_name}" 2>>"{log_path}"'
+    command = f'ffmpeg -f concat -safe 0 -i "{filelist_path}" -c copy -y "{file_path}" 2>>"{log_path}"'
     if if_print:
         print(f"指令：{command}\n")
     subprocess.call(command, shell=True)
-    shutil.move(file_name, os.path.dirname(folder_path))
-    os.chdir(_cwd)
-    queue_.put(os.path.join(os.path.dirname(folder_path), file_name))
-    return os.path.join(os.path.dirname(folder_path), file_name)
+    if move_to_upper_folder:
+        file_path = shutil.move(file_path, os.path.dirname(folder_path))
+    return file_path
 
 
 def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, max_all_second=None):
@@ -90,19 +86,14 @@ def cli_run(args):
     max_all_second = args.max_all_second
     delete_assembly_folder = args.delete_assembly_folder
     output_dir = cut_video(video_path, srt_path, max_onomatopoeic_second=max_onomatopoeic_second, max_all_second=max_all_second)
-    concat_video(output_dir)
+    concat_video(output_dir, move_to_upper_folder=True)
     if delete_assembly_folder:
         shutil.rmtree(output_dir)
 
 
-def invoke_run(video_path, srt_path=None, delete_assembly_folder=True, lock_=threading.Lock()):
+def invoke_run(video_path, srt_path=None, delete_assembly_folder=True):
     output_dir = cut_video(video_path, srt_path, if_print=False)
-    queue = Queue()
-    with lock_:
-        t = threading.Thread(target=concat_video, args=[output_dir], kwargs={'simple_postfix': True, 'if_print': False, 'queue_': queue})
-        t.start()
-        t.join()
-        result_file_path = queue.get(block=False)
+    result_file_path = concat_video(output_dir, simple_postfix=True, if_print=False, move_to_upper_folder=True)
     if delete_assembly_folder:
         shutil.rmtree(output_dir)
     print(f"视频合并完毕，开始上传...")
