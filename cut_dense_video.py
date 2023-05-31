@@ -3,7 +3,6 @@ import multiprocessing
 import os
 import shutil
 import subprocess
-import threading
 from datetime import datetime
 from queue import Queue
 
@@ -96,7 +95,7 @@ def cli_run(args):
         shutil.rmtree(output_dir)
 
 
-def invoke_run(video_path, srt_path=None, delete_assembly_folder=True, lock_=threading.Lock()):
+def invoke_run(video_path, srt_path=None, delete_assembly_folder=True, lock_=multiprocessing.Lock()):
     output_dir = cut_video(video_path, srt_path, if_print=False)
     queue = Queue()
     with lock_:

@@ -21,7 +21,7 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from utils.chrome_controller import UserDirDispatcher
 from utils.common_util import get_download_path
 from utils.load_xpath import *
-from utils.locks import global_lock, upload_select_lock
+from utils.locks import global_thread_lock, upload_select_lock
 from utils.sub_util import gen_custom_srt
 from utils.upload_util import Uploader, upload_file_pyauto
 from utils.webdriver_util import wait_element_clickable, wait_element_presence, wait_element_visible
@@ -127,7 +127,7 @@ class FeishuApp:
         time.sleep(120)
 
     def open_main_page(self):
-        with global_lock:
+        with global_thread_lock:
             self._open_browser()
         self.edge_browser.get('https://rbqqmtbi35.feishu.cn/minutes/me')
         self.edge_browser.maximize_window()
