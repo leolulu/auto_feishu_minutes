@@ -2,7 +2,7 @@ import re
 
 
 def if_eng_only_sentence(content) -> bool:
-    if re.match(r"^[a-zA-Z,'， \.]+$", content):
+    if re.match(r"^[a-zA-Z,'， \.?？]+$", content):
         return True
     else:
         return False
