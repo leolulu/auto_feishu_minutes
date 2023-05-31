@@ -6,7 +6,8 @@ from datetime import datetime
 
 from tqdm import tqdm
 
-from utils.sub_util import read_srt
+from utils.re_util import eng_only_sentence_len, if_eng_only_sentence
+from utils.sub_util import CHAR_SPEAK_DURATION_RATIO, read_srt
 
 
 def concat_video(folder_path, simple_postfix=False, if_print=True, move_to_upper_folder=False):
@@ -34,7 +35,7 @@ def concat_video(folder_path, simple_postfix=False, if_print=True, move_to_upper
     return file_path
 
 
-def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, max_all_second=None):
+def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, max_all_second=None, truncate_long_eng_sentence=False):
     video_path = os.path.abspath(video_path)
     video_name = os.path.basename(video_path)
     output_dir = os.path.join(os.path.dirname(video_path), os.path.splitext(video_name)[0]+'_concat')
@@ -46,7 +47,7 @@ def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, 
             srt_path = srt_path_obj
         else:
             srt_path = video_path + '.srt'
-    srt_datas = read_srt(srt_path, max_onomatopoeic_second, max_all_second)
+    srt_datas = read_srt(srt_path, max_onomatopoeic_second, max_all_second, truncate_long_eng_sentence)
     for idx, srt_data in enumerate(tqdm(srt_datas)):
         start_time, end_time, content = srt_data
 
@@ -54,6 +55,8 @@ def cut_video(video_path, srt_path, if_print=True, max_onomatopoeic_second=1.0, 
         delta = strptime(end_time) - strptime(start_time)
         seconds = delta.seconds + delta.microseconds / 1000 / 1000
         if (
+            (not (if_eng_only_sentence(content) and eng_only_sentence_len(content)*CHAR_SPEAK_DURATION_RATIO <= seconds))
+            and
             ((max_onomatopoeic_second is not None) and (seconds > max_onomatopoeic_second))
             or ((max_all_second is not None) and (seconds > max_all_second))
         ):
