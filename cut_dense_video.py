@@ -1,11 +1,10 @@
 import argparse
-import multiprocessing
 import os
 import shutil
 import subprocess
 import threading
-from datetime import datetime
 from queue import Queue
+from datetime import datetime
 
 from tqdm import tqdm
 
@@ -100,7 +99,7 @@ def invoke_run(video_path, srt_path=None, delete_assembly_folder=True, lock_=thr
     output_dir = cut_video(video_path, srt_path, if_print=False)
     queue = Queue()
     with lock_:
-        t = multiprocessing.Process(target=concat_video, args=[output_dir], kwargs={'simple_postfix': True, 'if_print': False, 'queue_': queue})
+        t = threading.Thread(target=concat_video, args=[output_dir], kwargs={'simple_postfix': True, 'if_print': False, 'queue_': queue})
         t.start()
         t.join()
         result_file_path = queue.get(block=False)
