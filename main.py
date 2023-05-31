@@ -31,7 +31,7 @@ class PostUploader:
         self.app: FeishuApp = None  # type: ignore
         self.user_dir_dispatcher = user_dir_dispatcher
 
-    def upload_laucher(self, switch_between_post_uploads):
+    def upload_launcher(self, switch_between_post_uploads):
         self.level_upload(switch_between_post_uploads)
         if self.all_finish:
             return
@@ -244,10 +244,10 @@ class FileScanner:
         if file.post_uploader is None:
             file.post_uploader = PostUploader(finish_file_path, level_target, self.user_dir_dispatcher)
         if self.switch_between_post_uploads:
-            file.post_uploader.upload_laucher(self.switch_between_post_uploads)
+            file.post_uploader.upload_launcher(self.switch_between_post_uploads)
         else:
             while not file.post_uploader.all_finish:
-                file.post_uploader.upload_laucher(self.switch_between_post_uploads)
+                file.post_uploader.upload_launcher(self.switch_between_post_uploads)
         return file.post_uploader.all_finish
 
     def check_and_process_files_concurrent(self):
