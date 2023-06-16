@@ -310,7 +310,7 @@ class FileScanner:
             else:
                 self.check_and_process_files()
             if self._check_need_to_wait():
-                time.sleep(10)
+                time.sleep(5)
 
 
 if __name__ == '__main__':
