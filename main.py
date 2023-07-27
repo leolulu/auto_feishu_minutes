@@ -21,7 +21,7 @@ class PostUploader:
         self,
         video_path: str,
         level_target,
-        user_dir_dispatcher: UserDirDispatcher
+        user_dir_dispatcher: UserDirDispatcher,
     ) -> None:
         self.video_path = video_path
         self.level_target = level_target
@@ -44,7 +44,7 @@ class PostUploader:
         print(f"启动【{self.current_level}】次上传...")
         if self.app is None:
             print("本次上传是视频环节...")
-            srt_path = os.path.splitext(self.video_path)[0] + '.srt'
+            srt_path = os.path.splitext(self.video_path)[0] + ".srt"
             if if_srt_empty(srt_path):
                 print("字幕内容为空，后处理到此为止...")
                 self.all_finish = True
@@ -53,7 +53,7 @@ class PostUploader:
             self.app = FeishuApp(
                 self.video_path,
                 self.user_dir_dispatcher,
-                if_need_sub=False if self.current_level == self.level_target else True
+                if_need_sub=False if self.current_level == self.level_target else True,
             )
         else:
             print("本次上传是字幕环节...")
@@ -64,7 +64,7 @@ class PostUploader:
 
 
 class FileWatcher:
-    ILLEGAL_CHAR = ['~']
+    ILLEGAL_CHAR = ["~"]
 
     def __init__(self, file_path, user_dir_dispatcher: UserDirDispatcher) -> None:
         print(f"新增文件进入监视中：{file_path}")
@@ -167,8 +167,8 @@ class FileWatcher:
 class FileScanner:
     POSTFIX = "_srted"
     NOT_PROCESS_POSTFIX = [POSTFIX, "_cut_dense", "_ccd", "_remuxed"]
-    SUPPORTED_FORMAT = ['.mp4', '.avi', '.wmv', '.mov', '.m4v', '.mpeg', 'ogg', '.3gp', '.flv']
-    REMUX_FORMAT = ['.mkv', '.webm']
+    SUPPORTED_FORMAT = [".mp4", ".avi", ".wmv", ".mov", ".m4v", ".mpeg", "ogg", ".3gp", ".flv"]
+    REMUX_FORMAT = [".mkv", ".webm"]
 
     def __init__(
         self,
@@ -176,11 +176,13 @@ class FileScanner:
         level_target=4,
         switch_after_noumenon_uploaded=False,
         switch_between_post_uploads=False,
-        use_concurrency=False
+        use_concurrency=False,
     ) -> None:
         self.files: List[FileWatcher] = []
         self.submitted_files: List[FileWatcher] = []
         self.data_dir = data_dir
+        if not os.path.exists(os.path.abspath(data_dir)):
+            os.makedirs(os.path.abspath(data_dir), exist_ok=True)
         self.level_target = level_target
         self.switch_after_noumenon_uploaded = switch_after_noumenon_uploaded
         self.switch_between_post_uploads = switch_between_post_uploads
@@ -194,7 +196,7 @@ class FileScanner:
             self.switch_between_post_uploads = False
 
     def append_file_list(self, file_path):
-        if not file_path in [i.file_path for i in (self.files+self.submitted_files)]:
+        if not file_path in [i.file_path for i in (self.files + self.submitted_files)]:
             self.files.append(FileWatcher(file_path, self.user_dir_dispatcher))
 
     def _renamed_name(self, file_path):
@@ -262,7 +264,7 @@ class FileScanner:
                 print("异步任务出问题了！！！！！需要检查！")
                 print(e)
                 traceback.print_exc()
-                with open('error.log', 'a', encoding='utf-8') as f:
+                with open("error.log", "a", encoding="utf-8") as f:
                     f.write("{}\n{}\n{}\n\n\n".format(file.file_path, str(e), traceback.format_exc()))
 
         for file in self.files[::-1]:
@@ -298,7 +300,7 @@ class FileScanner:
     def _check_need_to_wait(self):
         if_files_empty = len(self.files) == 0
         sizes = set([i.check_size_stable(False) for i in self.files])
-        if_all_size_stable = ((len(sizes) == 1) and sizes.pop())
+        if_all_size_stable = (len(sizes) == 1) and sizes.pop()
         return if_files_empty or (not if_all_size_stable)
 
     def run(self):
@@ -310,22 +312,22 @@ class FileScanner:
             else:
                 self.check_and_process_files()
             if self._check_need_to_wait():
-                time.sleep(10)
+                time.sleep(5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--data_dir', help='监控目录的路径，可以使用相对路径，默认为当前目录的data文件夹', default='data')
-    parser.add_argument('-l', '--level_target', help='需要进行的N次处理层数，默认为2', default=2, type=int)
-    parser.add_argument('--switch_after_noumenon_uploaded', help='单线程处理模式专用，是否在原始文件上传后立刻切换上传下一个原始文件，默认关闭', action='store_true')
-    parser.add_argument('--switch_between_post_uploads', help='单线程处理模式专用，是否在上传后处理文件时进行轮番上传，默认关闭', action='store_true')
-    parser.add_argument('--not_use_concurrency', help='是否禁用多线程处理模式，默认开启多线程处理模式。多线程处理模式开启时，单线程处理模式的上两个选项会被关闭', action='store_false')
+    parser.add_argument("--data_dir", help="监控目录的路径，可以使用相对路径，默认为当前目录的data文件夹", default="data")
+    parser.add_argument("-l", "--level_target", help="需要进行的N次处理层数，默认为2", default=2, type=int)
+    parser.add_argument("--switch_after_noumenon_uploaded", help="单线程处理模式专用，是否在原始文件上传后立刻切换上传下一个原始文件，默认关闭", action="store_true")
+    parser.add_argument("--switch_between_post_uploads", help="单线程处理模式专用，是否在上传后处理文件时进行轮番上传，默认关闭", action="store_true")
+    parser.add_argument("--not_use_concurrency", help="是否禁用多线程处理模式，默认开启多线程处理模式。多线程处理模式开启时，单线程处理模式的上两个选项会被关闭", action="store_false")
     args = parser.parse_args()
     scanner = FileScanner(
         os.path.abspath(args.data_dir),
         level_target=args.level_target,
         switch_after_noumenon_uploaded=args.switch_after_noumenon_uploaded,
         switch_between_post_uploads=args.switch_between_post_uploads,
-        use_concurrency=args.not_use_concurrency
+        use_concurrency=args.not_use_concurrency,
     )
     scanner.run()

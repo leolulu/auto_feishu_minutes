@@ -1,4 +1,5 @@
 webdriver-manager
+srt
 lxml
 PyAutoGUI
 retrying
