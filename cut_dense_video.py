@@ -91,7 +91,7 @@ def cut_video(
                 [
                     os.path.splitext(video_name)[0],
                     f"_{str(idx).zfill(6)}",
-                    os.path.splitext(video_name)[1],
+                    ".mp4",
                 ]
             ),
         )
