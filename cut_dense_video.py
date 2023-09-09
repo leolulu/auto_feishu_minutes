@@ -51,6 +51,7 @@ def cut_video(
     max_all_second=None,
     truncate_long_eng_sentence=False,
     parallel=False,
+    safe_mode=False,
 ):
     video_path = os.path.abspath(video_path)
     video_name = os.path.basename(video_path)
@@ -74,6 +75,10 @@ def cut_video(
 
         delta = strptime(end_time) - strptime(start_time)
         seconds = delta.seconds + delta.microseconds / 1000 / 1000
+
+        if safe_mode and seconds < 1 / 23:
+            continue
+
         if (
             (not (if_eng_only_sentence(content) and eng_only_sentence_len(content) * CHAR_SPEAK_DURATION_RATIO <= seconds))
             and ((max_onomatopoeic_second is not None) and (seconds > max_onomatopoeic_second))
@@ -132,8 +137,14 @@ def cli_run(args):
     max_all_second = args.max_all_second
     delete_assembly_folder = args.delete_assembly_folder
     parallel = args.parallel
+    safe_mode = args.safe
     output_dir = cut_video(
-        video_path, srt_path, max_onomatopoeic_second=max_onomatopoeic_second, max_all_second=max_all_second, parallel=parallel
+        video_path,
+        srt_path,
+        max_onomatopoeic_second=max_onomatopoeic_second,
+        max_all_second=max_all_second,
+        parallel=parallel,
+        safe_mode=safe_mode,
     )
     concat_video(output_dir, move_to_upper_folder=True)
     if delete_assembly_folder:
@@ -157,5 +168,6 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--max_all_second", help="如果指定，将限制字幕所有单句时长为此秒，此选项优先级大于max_onomatopoeic_second", type=float)
     parser.add_argument("-d", "--delete_assembly_folder", help="是否需要删除合并之前的碎片视频文件夹", action="store_true")
     parser.add_argument("-p", "--parallel", help="是否以多线程的方式转换视频", action="store_true")
+    parser.add_argument("--safe", help="是否丢弃过短的片段(小于1/23秒)，以免ffmpeg切分出现异常", action="store_true")
     args = parser.parse_args()
     cli_run(args)
