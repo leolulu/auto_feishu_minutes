@@ -4,7 +4,6 @@ import re
 import shutil
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
 from typing import List, NamedTuple
 
 from tqdm import tqdm
@@ -245,7 +244,7 @@ def invoke_run(video_path, srt_path=None, delete_assembly_folder=True):
     result_file_path = concat_video(output_dir, simple_postfix=True, if_print=False, move_to_upper_folder=True)
     if delete_assembly_folder:
         shutil.rmtree(output_dir)
-    print(f"视频合并完毕，开始上传...")
+    print("视频合并完毕，开始上传...")
     return result_file_path
 
 
