@@ -156,7 +156,7 @@ def cut_video(
                 commands=commands
             )
     if parallel:
-        with ThreadPoolExecutor(max_workers=4) as executor:
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             with tqdm(total=len(commands), desc="Processing") as pbar:
                 for _ in executor.map(_parallel_process, commands):
                     pbar.update(1)
