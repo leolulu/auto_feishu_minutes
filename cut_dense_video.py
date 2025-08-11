@@ -102,22 +102,17 @@ def cut_video(
 
         # 处理静音片段
         if speed_up_silence and _time_str_to_seconds(start_time) > _time_str_to_seconds(last_end_time):
-            silence_start_time = last_end_time
-            silence_end_time = start_time
-            output_video_path = os.path.join(
-                output_dir,
-                f"{os.path.splitext(video_name)[0]}_{str(idx).zfill(6)}_silence.mp4",
+            _process_silence_segment(
+                video_path=video_path,
+                output_dir=output_dir,
+                video_name=video_name,
+                start_time=last_end_time,
+                end_time=start_time,
+                idx=idx,
+                silence_speed_ratio=silence_speed_ratio,
+                parallel=parallel,
+                commands=commands
             )
-            log_path = os.path.abspath(os.path.join(output_dir, "cut_video.log"))
-            command = (
-                f'ffmpeg -y -ss {silence_start_time} -to {silence_end_time} -i "{video_path}" '
-                f'-vf "setpts={1/silence_speed_ratio}*PTS" -af "atempo={silence_speed_ratio}" '
-                f'-preset veryfast -map_chapters -1 "{output_video_path}"'
-            )
-            if parallel:
-                log_path = f"_{idx}_silence".join(os.path.splitext(log_path))
-            command += f' 2>>"{log_path}"'
-            commands.append(Command(command, log_path))
 
         # 处理语音片段
         seconds = _time_str_to_seconds(end_time) - _time_str_to_seconds(start_time)
@@ -153,22 +148,17 @@ def cut_video(
         video_duration = _get_video_duration(video_path)
         last_end_time_seconds = _time_str_to_seconds(last_end_time)
         if video_duration and last_end_time_seconds < video_duration:
-            silence_start_time = last_end_time
-            silence_end_time = video_duration
-            output_video_path = os.path.join(
-                output_dir,
-                f"{os.path.splitext(video_name)[0]}_{str(len(srt_datas)).zfill(6)}_silence.mp4",
+            _process_silence_segment(
+                video_path=video_path,
+                output_dir=output_dir,
+                video_name=video_name,
+                start_time=last_end_time,
+                end_time=str(video_duration),
+                idx=len(srt_datas),
+                silence_speed_ratio=silence_speed_ratio,
+                parallel=parallel,
+                commands=commands
             )
-            log_path = os.path.abspath(os.path.join(output_dir, "cut_video.log"))
-            command = (
-                f'ffmpeg -y -ss {silence_start_time} -to {silence_end_time} -i "{video_path}" '
-                f'-vf "setpts={1/silence_speed_ratio}*PTS" -af "atempo={silence_speed_ratio}" '
-                f'-preset veryfast -map_chapters -1 "{output_video_path}"'
-            )
-            if parallel:
-                log_path = f"_{len(srt_datas)}_silence".join(os.path.splitext(log_path))
-            command += f' 2>>"{log_path}"'
-            commands.append(Command(command, log_path))
     if parallel:
         with ThreadPoolExecutor(max_workers=4) as executor:
             with tqdm(total=len(commands), desc="Processing") as pbar:
@@ -191,6 +181,34 @@ def _parallel_process(command: Command):
     with open(command.log_path, "w", encoding="utf-8") as f:
         f.write(f"{command.command}\n\n\n")
     subprocess.call(command.command, shell=True)
+
+
+def _process_silence_segment(
+    video_path: str,
+    output_dir: str,
+    video_name: str,
+    start_time: str,
+    end_time: str,
+    idx: int,
+    silence_speed_ratio: float,
+    parallel: bool,
+    commands: List[Command]
+) -> None:
+    """处理静音片段的通用函数"""
+    output_video_path = os.path.join(
+        output_dir,
+        f"{os.path.splitext(video_name)[0]}_{str(idx).zfill(6)}_silence.mp4",
+    )
+    log_path = os.path.abspath(os.path.join(output_dir, "cut_video.log"))
+    command = (
+        f'ffmpeg -y -ss {start_time} -to {end_time} -i "{video_path}" '
+        f'-vf "setpts={1/silence_speed_ratio}*PTS" -af "atempo={silence_speed_ratio}" '
+        f'-preset veryfast -map_chapters -1 "{output_video_path}"'
+    )
+    if parallel:
+        log_path = f"_{idx}_silence".join(os.path.splitext(log_path))
+    command += f' 2>>"{log_path}"'
+    commands.append(Command(command, log_path))
 
 
 def cli_run(args):
