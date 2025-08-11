@@ -93,7 +93,7 @@ def cut_video(
     srt_datas = read_srt(srt_path, max_onomatopoeic_second, max_all_second, truncate_long_eng_sentence)
 
     commands: List[Command] = []
-    last_end_time = "0:00:00.000"
+    last_end_time = "00:00:00.000"
 
     for idx, srt_data in enumerate(srt_datas):
         start_time, end_time, content = srt_data
