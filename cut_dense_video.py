@@ -145,12 +145,17 @@ def cut_video(
         video_duration = _get_video_duration(video_path)
         last_end_time_seconds = _time_str_to_seconds(last_end_time)
         if video_duration and last_end_time_seconds < video_duration:
+            # Convert video duration from seconds to HH:MM:SS format
+            hours = int(video_duration // 3600)
+            minutes = int((video_duration % 3600) // 60)
+            seconds = video_duration % 60
+            end_time_str = f"{hours:02d}:{minutes:02d}:{seconds:06.3f}"
             _process_silence_segment(
                 video_path=video_path,
                 output_dir=output_dir,
                 video_name=video_name,
                 start_time=last_end_time,
-                end_time=str(video_duration),
+                end_time=end_time_str,
                 idx=len(srt_datas),
                 parallel=parallel,
                 commands=commands
@@ -257,6 +262,6 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--delete_assembly_folder", help="是否需要删除合并之前的碎片视频文件夹", action="store_true")
     parser.add_argument("-p", "--parallel", help="是否以多线程的方式转换视频", action="store_true")
     parser.add_argument("--safe", help="是否丢弃过短的片段(小于1/23秒)，以免ffmpeg切分出现异常", action="store_true")
-    parser.add_argument("--speed_up_silence", help="是否对视频无声部分进行加速处理", action="store_true")
+    parser.add_argument("-ss" ,"--speed_up_silence", help="是否对视频无声部分进行加速处理", action="store_true")
     args = parser.parse_args()
     cli_run(args)
