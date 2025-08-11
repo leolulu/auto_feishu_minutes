@@ -79,7 +79,6 @@ def cut_video(
     parallel=False,
     safe_mode=False,
     speed_up_silence=False,
-    silence_speed_ratio=10.0,
 ):
     video_path = os.path.abspath(video_path)
     video_name = os.path.basename(video_path)
@@ -109,7 +108,6 @@ def cut_video(
                 start_time=last_end_time,
                 end_time=start_time,
                 idx=idx,
-                silence_speed_ratio=silence_speed_ratio,
                 parallel=parallel,
                 commands=commands
             )
@@ -155,7 +153,6 @@ def cut_video(
                 start_time=last_end_time,
                 end_time=str(video_duration),
                 idx=len(srt_datas),
-                silence_speed_ratio=silence_speed_ratio,
                 parallel=parallel,
                 commands=commands
             )
@@ -183,6 +180,13 @@ def _parallel_process(command: Command):
     subprocess.call(command.command, shell=True)
 
 
+def _calculate_speed_by_duration(duration: float) -> int:
+    """根据静音时长自动计算快进速度"""
+    for s in range(2, 8):
+        if duration <= s * 2:
+            return s
+    return 8
+
 def _process_silence_segment(
     video_path: str,
     output_dir: str,
@@ -190,11 +194,13 @@ def _process_silence_segment(
     start_time: str,
     end_time: str,
     idx: int,
-    silence_speed_ratio: float,
     parallel: bool,
     commands: List[Command]
 ) -> None:
     """处理静音片段的通用函数"""
+    duration_seconds = _time_str_to_seconds(end_time) - _time_str_to_seconds(start_time)
+    silence_speed = _calculate_speed_by_duration(duration_seconds)
+    
     output_video_path = os.path.join(
         output_dir,
         f"{os.path.splitext(video_name)[0]}_{str(idx).zfill(6)}_silence.mp4",
@@ -202,7 +208,7 @@ def _process_silence_segment(
     log_path = os.path.abspath(os.path.join(output_dir, "cut_video.log"))
     command = (
         f'ffmpeg -y -ss {start_time} -to {end_time} -i "{video_path}" '
-        f'-vf "setpts={1/silence_speed_ratio}*PTS" -af "atempo={silence_speed_ratio}" '
+        f'-vf "setpts={1/silence_speed}*PTS" -af "atempo={silence_speed}" '
         f'-preset veryfast -map_chapters -1 "{output_video_path}"'
     )
     if parallel:
@@ -220,7 +226,6 @@ def cli_run(args):
     parallel = args.parallel
     safe_mode = args.safe
     speed_up_silence = args.speed_up_silence
-    silence_speed_ratio = args.silence_speed_ratio
     output_dir = cut_video(
         video_path,
         srt_path,
@@ -229,7 +234,6 @@ def cli_run(args):
         parallel=parallel,
         safe_mode=safe_mode,
         speed_up_silence=speed_up_silence,
-        silence_speed_ratio=silence_speed_ratio,
     )
     concat_video(output_dir, move_to_upper_folder=True)
     if delete_assembly_folder:
@@ -255,6 +259,5 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--parallel", help="是否以多线程的方式转换视频", action="store_true")
     parser.add_argument("--safe", help="是否丢弃过短的片段(小于1/23秒)，以免ffmpeg切分出现异常", action="store_true")
     parser.add_argument("--speed_up_silence", help="是否对视频无声部分进行加速处理", action="store_true")
-    parser.add_argument("--silence_speed_ratio", help="无声部分加速的倍率", type=float, default=10.0)
     args = parser.parse_args()
     cli_run(args)
