@@ -36,6 +36,8 @@ def _time_str_to_seconds(time_str):
 
 def _natural_sort_key(s):
     match = re.search(r'_(\d+)_', s)
+    if not match:
+        match = re.search(r'^(\d+)_', s)
     if match:
         return int(match.group(1))
     return -1
