@@ -3,12 +3,10 @@ import shutil
 import subprocess
 
 # 导入需要测试的函数
-import sys
 import tempfile
 import unittest
 from unittest.mock import mock_open, patch
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from cut_dense_video import (
     _calculate_speed_by_duration,
     _get_video_duration,
